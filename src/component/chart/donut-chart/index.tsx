@@ -3,10 +3,9 @@ import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from "recharts";
 
 // Example data – replace with your actual data
 const statusData = [
-  { name: "Terkirim", value: 400, fill: "#355872" },
-  { name: "Dalam Proses", value: 300, fill: "#7AAACE" },
-  { name: "Pending", value: 200, fill: "#9CD5FF" },
-  { name: "Gagal", value: 100, fill: "#F7F8F0" },
+  { name: "aprove", value: 400, fill: "#355872" },
+  { name: "pending", value: 300, fill: "#7AAACE" },
+  { name: "reject", value: 200, fill: "#9CD5FF" },
 ];
 
 // Custom tooltip component (optional)
