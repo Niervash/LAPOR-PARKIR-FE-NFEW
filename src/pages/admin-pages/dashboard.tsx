@@ -43,7 +43,9 @@ const AdminDashboard: React.FC = () => {
         setLoading(true);
         const res = await GetDataPetugas();
         // 👇 pastikan data berupa array
+        console.log("data 1: ", res);
         const data = Array.isArray(res) ? res : res?.data || [];
+        console.log("data 2: ", data);
         setReports(data);
       } catch (error) {
         console.error("Gagal mengambil data laporan:", error);

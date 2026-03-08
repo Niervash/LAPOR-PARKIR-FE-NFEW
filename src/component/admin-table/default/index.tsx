@@ -1,8 +1,7 @@
 import React from "react";
 import { Eye, ImageIcon, CheckCircle, XCircle, Trash2 } from "lucide-react";
-import type { Report } from "../../../types/map.types.interface"; // adjust path as needed
+import type { Report } from "../../../types/map.types.interface";
 
-// Status configuration aligned with ReportStatus ("pending" | "approve" | "reject")
 const statusConfig = {
   pending: {
     label: "Pending",
@@ -42,7 +41,7 @@ const AdminReportTable: React.FC<AdminReportTableProps> = ({
 }) => {
   if (reports.length === 0) {
     return (
-      <div className="bg-white rounded-2xl  p-16 text-center">
+      <div className="bg-white rounded-2xl p-16 text-center">
         <div className="w-14 h-14 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
           <Eye className="h-6 w-6 text-black" />
         </div>
@@ -60,31 +59,34 @@ const AdminReportTable: React.FC<AdminReportTableProps> = ({
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-gray-300">
-              <th className="text-left px-5 py-3.5 font-medium text-muted-black/70 text-xs">
+              <th className="text-left px-5 py-3.5 font-medium text-gray-600 text-xs">
                 No
               </th>
               {isAdmin && (
-                <th className="text-left px-5 py-3.5 font-medium text-muted-black/70 text-xs">
+                <th className="text-left px-5 py-3.5 font-medium text-gray-600 text-xs">
                   Pelapor
                 </th>
               )}
-              <th className="text-left px-5 py-3.5 font-medium text-muted-black/70 text-xs">
+              <th className="text-left px-5 py-3.5 font-medium text-gray-600 text-xs">
                 Tanggal
               </th>
-              <th className="text-left px-5 py-3.5 font-medium text-muted-black/70 text-xs">
+              <th className="text-left px-5 py-3.5 font-medium text-gray-600 text-xs">
                 Lokasi
               </th>
-              <th className="text-left px-5 py-3.5 font-medium text-muted-black/70 text-xs">
+              <th className="text-left px-5 py-3.5 font-medium text-gray-600 text-xs">
+                Status Liar
+              </th>{" "}
+              {/* Kolom baru */}
+              <th className="text-left px-5 py-3.5 font-medium text-gray-600 text-xs">
                 Status
               </th>
-              <th className="text-left px-5 py-3.5 font-medium text-muted-black/70 text-xs">
+              <th className="text-left px-5 py-3.5 font-medium text-gray-600 text-xs">
                 Aksi
               </th>
             </tr>
           </thead>
           <tbody>
             {reports.map((report, index) => {
-              // Use statusPost field (always present in Report)
               const status =
                 statusConfig[report.statusPost] || statusConfig.pending;
 
@@ -99,20 +101,32 @@ const AdminReportTable: React.FC<AdminReportTableProps> = ({
                   {isAdmin && (
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-2.5">
-                        <div className="w-7 h-7 bg-linear-to-br from-primary/10 to-secondary/10 rounded-lg flex items-center justify-center text-[10px] font-bold text-primary">
+                        <div className="w-7 h-7 bg-linear-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center text-[10px] font-bold text-blue-800">
                           {report.namaPetugas?.charAt(0).toUpperCase() || "?"}
                         </div>
-                        <span className="font-medium text-foreground text-[13px]">
+                        <span className="font-medium text-gray-800 text-[13px]">
                           {report.namaPetugas || "Tidak diketahui"}
                         </span>
                       </div>
                     </td>
                   )}
-                  <td className="px-5 py-4 text-muted-foreground text-[13px]">
-                    {report.createdAt}
+                  <td className="px-5 py-4 text-gray-600 text-[13px]">
+                    {new Date(report.createdAt).toLocaleDateString("id-ID")}
                   </td>
-                  <td className="px-5 py-4 max-w-45 truncate text-foreground text-[13px]">
+                  <td className="px-5 py-4 max-w-45 truncate text-gray-800 text-[13px]">
                     {report.location}
+                  </td>
+                  {/* Kolom Status Liar */}
+                  <td className="px-5 py-4">
+                    <span
+                      className={`inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-semibold ${
+                        report.statusLiar === "Liar"
+                          ? "bg-red-100 text-red-700"
+                          : "bg-green-100 text-green-700"
+                      }`}
+                    >
+                      {report.statusLiar || "Tidak diketahui"}
+                    </span>
                   </td>
                   <td className="px-5 py-4">
                     <span
@@ -148,14 +162,14 @@ const AdminReportTable: React.FC<AdminReportTableProps> = ({
                           <>
                             <button
                               onClick={() => onApprove(report.id)}
-                              className="p-1.5 rounded-lg hover:bg-green-200 text-green-900 font-bold transition"
+                              className="p-1.5 rounded-lg hover:bg-green-200 text-green-800 transition"
                               title="Approve"
                             >
                               <CheckCircle className="h-3.5 w-3.5" />
                             </button>
                             <button
                               onClick={() => onReject?.(report.id)}
-                              className="p-1.5 rounded-lg hover:bg-red-200 text-red-900  transition"
+                              className="p-1.5 rounded-lg hover:bg-red-200 text-red-800 transition"
                               title="Reject"
                             >
                               <XCircle className="h-3.5 w-3.5" />
@@ -164,7 +178,7 @@ const AdminReportTable: React.FC<AdminReportTableProps> = ({
                         )}
                       <button
                         onClick={() => onDelete(report.id)}
-                        className="p-1.5 rounded-lg hover:bg-red-200 text-red-900 hover:text-red-900 transition"
+                        className="p-1.5 rounded-lg hover:bg-red-200 text-red-800 transition"
                         title="Hapus"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
