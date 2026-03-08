@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { Menu, ChevronLeft, ChevronRight } from "lucide-react"; // Bell dihapus
-import { AdminSidebar } from "../../component"; // sesuaikan path
+import { Menu, ChevronLeft, ChevronRight } from "lucide-react";
+import { AdminSidebar } from "../../component";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -12,10 +12,10 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
 
   return (
     <div className="min-h-screen flex w-full bg-[#F7F8F0]">
-      {/* Desktop sidebar */}
+      {/* Desktop sidebar - tambahkan z-40 agar di atas konten utama */}
       <aside
-        className={`hidden md:flex flex-col bg-[#355872] flex-shrink-0 transition-all duration-300 sticky top-0 h-screen ${
-          sidebarOpen ? "w-60" : "w-[68px]"
+        className={`hidden md:flex flex-col bg-[#355872] shrink-0 transition-all duration-300 sticky top-0 h-screen z-40 ${
+          sidebarOpen ? "w-60" : "w-68"
         }`}
       >
         <AdminSidebar sidebarOpen={sidebarOpen} setMobileOpen={setMobileOpen} />
@@ -29,7 +29,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         />
       )}
 
-      {/* Mobile sidebar */}
+      {/* Mobile sidebar - z-50 lebih tinggi dari konten */}
       <aside
         className={`fixed inset-y-0 left-0 z-50 w-60 bg-[#355872] transform transition-transform md:hidden ${
           mobileOpen ? "translate-x-0" : "-translate-x-full"
@@ -63,18 +63,18 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
             )}
           </button>
 
-          {/* Page title - sementara hardcode */}
+          {/* Page title */}
           <div className="flex-1">
             <h1 className="text-base font-semibold text-gray-800">
               Admin Dashboard
             </h1>
           </div>
 
-          {/* Right side icons - dikosongkan sementara */}
+          {/* Right side icons - kosong */}
           <div className="flex items-center gap-3"></div>
         </header>
 
-        {/* Main content area */}
+        {/* Main content area - tidak perlu z-index, konten di dalamnya akan relatif */}
         <main className="flex-1 p-4 md:p-6 overflow-auto">{children}</main>
       </div>
     </div>

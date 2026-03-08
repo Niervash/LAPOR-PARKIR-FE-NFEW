@@ -15,7 +15,7 @@ const AdminSidebar: React.FC<SidebarProps> = ({
   const location = useLocation();
 
   return (
-    <div className="flex flex-col h-full bg-white border-r border-gray-100">
+    <div className="flex flex-col h-full bg-white border-r border-gray-100 ">
       {/* Logo Section */}
       <div className="p-5 flex items-center gap-3">
         <div className="w-9 h-9 bg-blue-50 rounded-xl flex items-center justify-center shrink-0">

@@ -14,6 +14,9 @@ export * from "./about-me";
 export * from "./modal-notification";
 
 // admin
+export * from "./admin-table";
 export * from "./card-wrapper";
 export * from "./chart";
+export * from "./admin-modal";
+export * from "./admin-map";
 export * from "./admin-sidebar";
