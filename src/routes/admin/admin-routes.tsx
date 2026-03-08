@@ -7,7 +7,7 @@ const AdminRoutes: React.FC = () => {
     <>
       <Routes>
         {/* <Route path="dashbaord" element={<AdminDashboard />} /> */}
-        <Route path="dashboard" element={<AdminDashboard />} />
+        <Route path="/dashboard" element={<AdminDashboard />} />
       </Routes>
     </>
   );
