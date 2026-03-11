@@ -1,43 +1,23 @@
 import React from "react";
-import { Eye, ImageIcon, CheckCircle, XCircle, Trash2 } from "lucide-react";
-import type { Report } from "../../../types/map.types.interface";
+import { Eye, Trash2 } from "lucide-react";
+import type { ReportAdmin } from "../../../types/admin.types.interface";
 
-const statusConfig = {
-  pending: {
-    label: "Pending",
-    dot: "bg-yellow-500",
-    bg: "bg-yellow-100 text-yellow-700",
-  },
-  approve: {
-    label: "Approved",
-    dot: "bg-green-500",
-    bg: "bg-green-100 text-green-700",
-  },
-  reject: {
-    label: "Rejected",
-    dot: "bg-red-500",
-    bg: "bg-red-100 text-red-700",
-  },
-};
+// Konfigurasi status untuk "Liar" / "Tidak Liar"
+const statusLiarConfig = {
+  Liar: { bg: "bg-red-100 text-red-700", label: "Liar" },
+  "Tidak Liar": { bg: "bg-green-100 text-green-700", label: "Tidak Liar" },
+} as const;
 
 interface AdminReportTableProps {
-  reports: Report[];
-  isAdmin?: boolean;
-  onView: (report: Report) => void;
+  reports: ReportAdmin[];
+  onView: (report: ReportAdmin) => any;
   onDelete: (id: string) => void;
-  onViewPhoto?: (url: string) => void;
-  onApprove?: (id: string) => void;
-  onReject?: (id: string) => void;
 }
 
 const AdminReportTable: React.FC<AdminReportTableProps> = ({
   reports,
-  isAdmin = false,
   onView,
   onDelete,
-  onViewPhoto,
-  onApprove,
-  onReject,
 }) => {
   if (reports.length === 0) {
     return (
@@ -59,86 +39,77 @@ const AdminReportTable: React.FC<AdminReportTableProps> = ({
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-gray-300">
-              <th className="text-left px-5 py-3.5 font-medium text-gray-600 text-xs">
+              <th className="text-left px-5 py-3.5 font-medium text-gray-600 text-xs whitespace-nowrap">
                 No
               </th>
-              {isAdmin && (
-                <th className="text-left px-5 py-3.5 font-medium text-gray-600 text-xs">
-                  Pelapor
-                </th>
-              )}
-              <th className="text-left px-5 py-3.5 font-medium text-gray-600 text-xs">
-                Tanggal
+              <th className="text-left px-5 py-3.5 font-medium text-gray-600 text-xs whitespace-nowrap">
+                Tanggal dan Waktu
               </th>
-              <th className="text-left px-5 py-3.5 font-medium text-gray-600 text-xs">
+              <th className="text-left px-5 py-3.5 font-medium text-gray-600 text-xs whitespace-nowrap">
+                Hari
+              </th>
+              <th className="text-left px-5 py-3.5 font-medium text-gray-600 text-xs whitespace-nowrap">
+                Latitude
+              </th>
+              <th className="text-left px-5 py-3.5 font-medium text-gray-600 text-xs whitespace-nowrap">
+                Longitude
+              </th>
+              <th className="text-left px-5 py-3.5 font-medium text-gray-600 text-xs whitespace-nowrap">
                 Lokasi
               </th>
-              <th className="text-left px-5 py-3.5 font-medium text-gray-600 text-xs">
-                Status Liar
-              </th>{" "}
-              {/* Kolom baru */}
-              <th className="text-left px-5 py-3.5 font-medium text-gray-600 text-xs">
-                Status
+              <th className="text-left px-5 py-3.5 font-medium text-gray-600 text-xs whitespace-nowrap">
+                Identitas Petugas
               </th>
-              <th className="text-left px-5 py-3.5 font-medium text-gray-600 text-xs">
+              <th className="text-left px-5 py-3.5 font-medium text-gray-600 text-xs whitespace-nowrap">
+                Prediction
+              </th>
+              <th className="text-left px-5 py-3.5 font-medium text-gray-600 text-xs whitespace-nowrap">
                 Aksi
               </th>
             </tr>
           </thead>
           <tbody>
             {reports.map((report, index) => {
-              const status =
-                statusConfig[report.statusPost] || statusConfig.pending;
+              const statusLiarKey =
+                report.status as keyof typeof statusLiarConfig;
+              const statusLiar =
+                statusLiarConfig[statusLiarKey] ||
+                statusLiarConfig["Tidak Liar"];
 
               return (
                 <tr
                   key={report.id}
                   className="border-b border-gray-200 last:border-0 hover:bg-sky-50 transition-colors duration-150 group"
                 >
-                  <td className="px-5 py-4 text-black text-xs font-mono">
+                  <td className="px-5 py-4 text-black text-xs font-mono whitespace-nowrap">
                     {String(index + 1).padStart(2, "0")}
                   </td>
-                  {isAdmin && (
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-7 h-7 bg-linear-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center text-[10px] font-bold text-blue-800">
-                          {report.namaPetugas?.charAt(0).toUpperCase() || "?"}
-                        </div>
-                        <span className="font-medium text-gray-800 text-[13px]">
-                          {report.namaPetugas || "Tidak diketahui"}
-                        </span>
-                      </div>
-                    </td>
-                  )}
-                  <td className="px-5 py-4 text-gray-600 text-[13px]">
-                    {new Date(report.createdAt).toLocaleDateString("id-ID")}
+                  <td className="px-5 py-4 text-gray-600 text-[13px] whitespace-nowrap">
+                    {new Date(report.tanggaldanwaktu).toLocaleString("id-ID")}
                   </td>
-                  <td className="px-5 py-4 max-w-45 truncate text-gray-800 text-[13px]">
-                    {report.location}
+                  <td className="px-5 py-4 text-gray-600 text-[13px] whitespace-nowrap">
+                    {report.hari}
                   </td>
-                  {/* Kolom Status Liar */}
-                  <td className="px-5 py-4">
+                  <td className="px-5 py-4 text-gray-600 text-[13px] whitespace-nowrap">
+                    {report.latitude}
+                  </td>
+                  <td className="px-5 py-4 text-gray-600 text-[13px] whitespace-nowrap">
+                    {report.longitude}
+                  </td>
+                  <td className="px-5 py-4 max-w-[180px] truncate text-gray-800 text-[13px]">
+                    {report.lokasi}
+                  </td>
+                  <td className="px-5 py-4 text-gray-600 text-[13px] whitespace-nowrap">
+                    {report.identitas_petugas}
+                  </td>
+                  <td className="px-5 py-4 whitespace-nowrap">
                     <span
-                      className={`inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-semibold ${
-                        report.statusLiar === "Liar"
-                          ? "bg-red-100 text-red-700"
-                          : "bg-green-100 text-green-700"
-                      }`}
+                      className={`inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-semibold ${statusLiar.bg}`}
                     >
-                      {report.statusLiar || "Tidak diketahui"}
+                      {statusLiar.label}
                     </span>
                   </td>
-                  <td className="px-5 py-4">
-                    <span
-                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold ${status.bg}`}
-                    >
-                      <span
-                        className={`w-1.5 h-1.5 rounded-full ${status.dot}`}
-                      />
-                      {status.label}
-                    </span>
-                  </td>
-                  <td className="px-5 py-4">
+                  <td className="px-5 py-4 whitespace-nowrap">
                     <div className="flex items-center gap-0.5 opacity-60 group-hover:opacity-100 transition-opacity">
                       <button
                         onClick={() => onView(report)}
@@ -147,35 +118,6 @@ const AdminReportTable: React.FC<AdminReportTableProps> = ({
                       >
                         <Eye className="h-3.5 w-3.5" />
                       </button>
-                      {report.photoUrl && onViewPhoto && (
-                        <button
-                          onClick={() => onViewPhoto(report.photoUrl!)}
-                          className="p-1.5 rounded-lg hover:bg-blue-200 text-black transition"
-                          title="Lihat Foto"
-                        >
-                          <ImageIcon className="h-3.5 w-3.5" />
-                        </button>
-                      )}
-                      {isAdmin &&
-                        onApprove &&
-                        report.statusPost === "pending" && (
-                          <>
-                            <button
-                              onClick={() => onApprove(report.id)}
-                              className="p-1.5 rounded-lg hover:bg-green-200 text-green-800 transition"
-                              title="Approve"
-                            >
-                              <CheckCircle className="h-3.5 w-3.5" />
-                            </button>
-                            <button
-                              onClick={() => onReject?.(report.id)}
-                              className="p-1.5 rounded-lg hover:bg-red-200 text-red-800 transition"
-                              title="Reject"
-                            >
-                              <XCircle className="h-3.5 w-3.5" />
-                            </button>
-                          </>
-                        )}
                       <button
                         onClick={() => onDelete(report.id)}
                         className="p-1.5 rounded-lg hover:bg-red-200 text-red-800 transition"

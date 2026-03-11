@@ -170,7 +170,7 @@ const MapPage: React.FC = () => {
                       Detail Laporan
                     </h3>
                     <p className="text-sm text-gray-500 mt-1">
-                      {selectedReport.location}
+                      {selectedReport.lokasi}
                     </p>
                   </div>
                   <button

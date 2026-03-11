@@ -18,7 +18,7 @@ const GetDataPetugas = async (): Promise<any> => {
     const response = await cookieApiClient.get(`${BASE_URL}/adminpetugas`, {
       headers: { Authorization: `Bearer ${token}` },
     });
-    console.log(response);
+    console.log(response.data);
     return response.data;
   } catch (error) {
     if (error instanceof Error) {
@@ -82,6 +82,8 @@ const processPetugasAction = async (
     throw error;
   }
 };
+
+// const GetDetailPelaporan = async():{}
 
 // Fungsi khusus Approve
 const ApprovePetugas = async (id: string): Promise<any> => {

@@ -8,7 +8,8 @@ import {
 } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import type { Report, ReportStatus } from "../../../types/map.types.interface";
+import type { WildStatus } from "../../../types/admin.types.interface";
+import type { ReportAdmin } from "../../../types/admin.types.interface";
 
 // Perbaiki ikon default Leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -21,16 +22,15 @@ L.Icon.Default.mergeOptions({
     "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
 });
 
-// Warna untuk setiap status
-const statusColors: Record<ReportStatus, string> = {
-  pending: "#EAB308",
-  approve: "#22C55E",
-  reject: "#EF4444",
+// Warna untuk setiap status WildStatus
+const wildStatusColors: Record<WildStatus, string> = {
+  Liar: "#EF4444", // merah
+  "Tidak Liar": "#22C55E", // hijau
 };
 
 // Buat ikon marker berbentuk lingkaran dengan warna status
-function createIcon(status: ReportStatus) {
-  const color = statusColors[status];
+function createIcon(status: WildStatus) {
+  const color = wildStatusColors[status];
   return L.divIcon({
     className: "custom-marker",
     html: `<div style="width:24px;height:24px;border-radius:50%;background:${color};border:3px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>`,
@@ -40,8 +40,8 @@ function createIcon(status: ReportStatus) {
 }
 
 interface ReportMapProps {
-  reports: Report[];
-  onMarkerClick?: (report: Report) => void;
+  reports: ReportAdmin[];
+  onMarkerClick?: (report: ReportAdmin) => void;
   onClick?: (lat: number, lng: number) => void;
   clickMarker?: { lat: number; lng: number } | null;
   height?: string;
@@ -71,7 +71,7 @@ export default function AdminReportMap({
   return (
     <div
       style={{ height }}
-      className="verflow-hidden shadow-lg z-0 relative rounded-lg border border-gray-200" // z-0 memastikan peta di belakang elemen dengan z-index lebih tinggi
+      className="overflow-hidden shadow-lg z-0 relative rounded-lg border border-gray-200"
     >
       <MapContainer
         center={[-6.2088, 106.8456]}
@@ -87,26 +87,20 @@ export default function AdminReportMap({
           <Marker
             key={report.id}
             position={[report.latitude, report.longitude]}
-            icon={createIcon(report.statusPost)}
+            icon={createIcon(report.status)}
           >
             <Popup>
               <div className="text-sm">
-                <p className="font-semibold">{report.namaPetugas}</p>
-                <p>{report.createdAt}</p>
+                <p className="font-semibold">{report.identitas_petugas}</p>
+                <p>{report.tanggaldanwaktu}</p>
                 <span
                   className={`inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-medium ${
-                    report.statusPost === "approve"
+                    report.status === "Tidak Liar"
                       ? "bg-green-100 text-green-700"
-                      : report.statusPost === "reject"
-                        ? "bg-red-100 text-red-700"
-                        : "bg-yellow-100 text-yellow-700"
+                      : "bg-red-100 text-red-700"
                   }`}
                 >
-                  {report.statusPost === "approve"
-                    ? "Approved"
-                    : report.statusPost === "reject"
-                      ? "Rejected"
-                      : "Pending"}
+                  {report.status === "Tidak Liar" ? "Tidak Liar" : "Liar"}
                 </span>
                 {onMarkerClick && (
                   <button

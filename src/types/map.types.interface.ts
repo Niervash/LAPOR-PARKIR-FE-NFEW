@@ -17,6 +17,9 @@ export interface Report {
   identitasPetugas: string; // identitas_petugas
   akurasi: string; // akurasi
   hari: string; // hari
+  identitas_petugas: string;
+  lokasi: string;
+  tanggaldanwaktu: string;
   statusLiar: string; // status (Tidak Liar / Liar)
   statusPost: "pending" | "approve" | "reject"; // status_post
   location: string; // lokasi

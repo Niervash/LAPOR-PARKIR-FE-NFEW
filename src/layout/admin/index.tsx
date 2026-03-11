@@ -15,12 +15,11 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       {/* Desktop sidebar - tambahkan z-40 agar di atas konten utama */}
       <aside
         className={`hidden md:flex flex-col bg-[#355872] shrink-0 transition-all duration-300 sticky top-0 h-screen z-40 ${
-          sidebarOpen ? "w-60" : "w-68"
+          sidebarOpen ? "w-60" : "w-20"
         }`}
       >
         <AdminSidebar sidebarOpen={sidebarOpen} setMobileOpen={setMobileOpen} />
       </aside>
-
       {/* Mobile overlay */}
       {mobileOpen && (
         <div
@@ -28,7 +27,6 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
           onClick={() => setMobileOpen(false)}
         />
       )}
-
       {/* Mobile sidebar - z-50 lebih tinggi dari konten */}
       <aside
         className={`fixed inset-y-0 left-0 z-50 w-60 bg-[#355872] transform transition-transform md:hidden ${
@@ -37,7 +35,6 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       >
         <AdminSidebar sidebarOpen={true} setMobileOpen={setMobileOpen} />
       </aside>
-
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0">
         <header className="h-16 bg-white border-b border-gray-200 flex items-center px-4 md:px-6 gap-3 sticky top-0 z-30">

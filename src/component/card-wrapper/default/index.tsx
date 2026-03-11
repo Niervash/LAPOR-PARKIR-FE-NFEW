@@ -20,7 +20,10 @@ const CardWrapper: React.FC<CardWrapperProps> = ({
   >
     <div className="bg-white flex items-center gap-2.5  px-5 py-4">
       <div className="bg-white rounded-lg p-1.5">
-        <Icon className="h-3.5 w-3.5" style={{ color: "#355872" }} />
+        <div className="p-1.5 rounded-lg bg-sky-100">
+          {" "}
+          <Icon className="h-3.5 w-3.5 text-sky-600" />
+        </div>
       </div>
       <h3 className="text-sm font-semibold text-black bg-white">{title}</h3>
     </div>

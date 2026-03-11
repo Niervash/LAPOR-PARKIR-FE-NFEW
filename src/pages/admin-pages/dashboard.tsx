@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { AdminLayout } from "../../layout";
-import { Breadcrumb } from "antd";
+import { Breadcrumb, Input, Select, Button, Pagination, Space } from "antd";
+import { SearchOutlined, DownloadOutlined } from "@ant-design/icons";
 import {
   AdminReportMap,
   AdminReportTable,
@@ -10,30 +11,26 @@ import {
   LokasiTerbanyak,
   StatusDistribusi,
 } from "../../component";
+import { BarChart, Map, PieChartIcon } from "lucide-react";
+import type { ReportAdmin } from "../../types/admin.types.interface";
 import {
-  BarChart,
-  Filter,
-  Map,
-  PieChartIcon,
-  Search,
-  Download,
-} from "lucide-react";
-import type { Report, ReportStatus } from "../../types/map.types.interface";
-import {
-  GetDataPetugas, // <-- ditambahkan
-  ApprovePetugas,
+  GetDataPetugas,
   DeleteLaporanPetugas,
-  RejectPetugas,
 } from "../../services/admin.service";
 
+const { Option } = Select;
+
 const AdminDashboard: React.FC = () => {
-  const [reports, setReports] = useState<Report[]>([]);
-  const [filteredReports, setFilteredReports] = useState<Report[]>([]);
-  const [selectedReport, setSelectedReport] = useState<Report | null>(null);
+  const [reports, setReports] = useState<ReportAdmin[]>([]);
+  const [selectedReport, setSelectedReport] = useState<ReportAdmin | null>(
+    null,
+  );
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const pageSize = 10;
   const isAdmin = true;
 
   // Fetch data dari API
@@ -42,14 +39,47 @@ const AdminDashboard: React.FC = () => {
       try {
         setLoading(true);
         const res = await GetDataPetugas();
-        // 👇 pastikan data berupa array
-        console.log("data 1: ", res);
-        const data = Array.isArray(res) ? res : res?.data || [];
-        console.log("data 2: ", data);
-        setReports(data);
+
+        // Logging untuk debugging (bisa dihapus setelah stabil)
+        console.log("Response API:", res);
+
+        // Ekstrak data array dari berbagai kemungkinan struktur
+        let rawData: any[] = [];
+        if (res?.data?.data && Array.isArray(res.data.data)) {
+          rawData = res.data.data;
+        } else if (res?.data && Array.isArray(res.data)) {
+          rawData = res.data;
+        } else if (res?.data?.records && Array.isArray(res.data.records)) {
+          rawData = res.data.records;
+        } else if (res?.data && typeof res.data === "object") {
+          // Cari properti pertama yang berupa array
+          const possibleArray = Object.values(res.data).find(Array.isArray);
+          if (possibleArray) rawData = possibleArray as any[];
+        }
+
+        // Mapping data dengan field alternatif
+        const mapped: ReportAdmin[] = rawData.map((item: any) => ({
+          id: String(item.id || item._id || item.ID || ""),
+          bukti: item.bukti || item.image || item.foto || "",
+          hari: item.hari || item.day || "",
+          identitas_petugas:
+            item.identitas_petugas || item.petugas || item.nama_petugas || "",
+          lokasi: item.lokasi || item.alamat || item.location || "",
+          status: item.status || "Tidak Liar",
+          tanggaldanwaktu:
+            item.tanggaldanwaktu ||
+            item.tanggal ||
+            item.date ||
+            item.waktu ||
+            "",
+          latitude: item.latitude || item.lat || null,
+          longitude: item.longitude || item.lng || null,
+        }));
+
+        setReports(mapped);
       } catch (error) {
         console.error("Gagal mengambil data laporan:", error);
-        setReports([]); // agar tidak error map
+        setReports([]);
         alert("Gagal memuat data. Silakan refresh.");
       } finally {
         setLoading(false);
@@ -58,81 +88,42 @@ const AdminDashboard: React.FC = () => {
     fetchReports();
   }, []);
 
-  // Filter laporan berdasarkan search dan status
-  useEffect(() => {
-    let filtered = reports;
-    // Filter status
-    if (statusFilter !== "all") {
-      const statusMap: Record<string, ReportStatus> = {
-        pending: "pending",
-        approved: "approve",
-        rejected: "reject",
-      };
-      filtered = filtered.filter(
-        (r) => r.statusPost === statusMap[statusFilter],
-      );
-    }
-    // Filter pencarian
-    if (search.trim() !== "") {
-      const term = search.toLowerCase();
-      filtered = filtered.filter(
-        (r) =>
-          r.namaPetugas?.toLowerCase().includes(term) ||
-          r.location?.toLowerCase().includes(term) ||
-          r.identitasPetugas?.toLowerCase().includes(term),
-      );
-    }
-    setFilteredReports(filtered);
+  // Filter data berdasarkan pencarian dan status
+  const filteredReports = useMemo(() => {
+    if (!reports.length) return [];
+
+    return reports.filter((report) => {
+      // Filter status
+      const matchesStatus =
+        statusFilter === "all" || report.status === statusFilter;
+
+      // Filter pencarian (case insensitive)
+      const searchTerm = search.toLowerCase().trim();
+      const matchesSearch =
+        searchTerm === "" ||
+        report.lokasi?.toLowerCase().includes(searchTerm) ||
+        report.identitas_petugas?.toLowerCase().includes(searchTerm) ||
+        report.status?.toLowerCase().includes(searchTerm) ||
+        report.hari?.toLowerCase().includes(searchTerm) ||
+        report.tanggaldanwaktu?.toLowerCase().includes(searchTerm);
+
+      return matchesStatus && matchesSearch;
+    });
   }, [reports, search, statusFilter]);
 
-  // Handler functions
-  const handleView = (report: Report) => setSelectedReport(report);
+  // Reset halaman ke 1 ketika filter berubah
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, statusFilter]);
 
+  // Pagination
+  const paginatedReports = filteredReports.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize,
+  );
+
+  const handleView = (report: ReportAdmin) => setSelectedReport(report);
   const handleDelete = (id: string) => setDeleteId(id);
-
-  const handleViewPhoto = (url: string) => window.open(url, "_blank");
-
-  const handleApprove = async (id: string) => {
-    try {
-      await ApprovePetugas(id);
-      setReports((prev) =>
-        prev.map((r) => (r.id === id ? { ...r, statusPost: "approve" } : r)),
-      );
-      alert("Laporan berhasil disetujui.");
-    } catch (error) {
-      alert("Gagal menyetujui laporan.");
-      console.error(error);
-    }
-  };
-
-  const handleReject = async (id: string) => {
-    try {
-      await RejectPetugas(id);
-      setReports((prev) =>
-        prev.map((r) => (r.id === id ? { ...r, statusPost: "reject" } : r)),
-      );
-      alert("Laporan berhasil ditolak.");
-    } catch (error) {
-      alert("Gagal menolak laporan.");
-      console.error(error);
-    }
-  };
-
-  const handleUpdateStatus = async (id: string, status: ReportStatus) => {
-    try {
-      if (status === "approve") {
-        await ApprovePetugas(id);
-      } else if (status === "reject") {
-        await RejectPetugas(id);
-      }
-      setReports((prev) =>
-        prev.map((r) => (r.id === id ? { ...r, statusPost: status } : r)),
-      );
-    } catch (error) {
-      alert("Gagal mengubah status.");
-      console.error(error);
-    }
-  };
 
   const deleteReport = async (id: string) => {
     try {
@@ -146,14 +137,17 @@ const AdminDashboard: React.FC = () => {
   };
 
   const handleExportCSV = () => {
-    // Buat CSV dari filteredReports
-    const headers = ["ID", "Petugas", "Lokasi", "Tanggal", "Status"];
+    if (filteredReports.length === 0) {
+      alert("Tidak ada data untuk diekspor.");
+      return;
+    }
+    const headers = ["ID", "Petugas", "Lokasi", "Tanggal", "Status Liar"];
     const rows = filteredReports.map((r) => [
       r.id,
-      r.namaPetugas,
-      r.location,
-      r.createdAt,
-      r.statusPost,
+      r.identitas_petugas,
+      r.lokasi,
+      r.tanggaldanwaktu,
+      r.status,
     ]);
     const csvContent = [headers, ...rows].map((e) => e.join(",")).join("\n");
     const blob = new Blob([csvContent], { type: "text/csv" });
@@ -187,95 +181,107 @@ const AdminDashboard: React.FC = () => {
       </div>
 
       <div className="space-y-7 p-4">
-        <Breadcrumb
+        {/* <Breadcrumb
           className="font-bold"
           items={[{ title: "Dashboard" }, { title: "Beranda" }]}
-        />
+        /> */}
 
         {/* Chart Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <CardWrapper title="Distribusi Status" icon={PieChartIcon}>
-            <StatusDistribusi />
+            <StatusDistribusi reports={filteredReports} />
           </CardWrapper>
           <CardWrapper title="Lokasi Terbanyak" icon={BarChart}>
-            <LokasiTerbanyak />
+            <LokasiTerbanyak reports={filteredReports} />
           </CardWrapper>
         </div>
 
-        {/* Map Section */}
-        <div className="bg-white rounded-2xl shadow-lg overflow-hidden z-0">
-          <div className="px-5 py-4 flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="p-1.5 rounded-lg bg-sky-100">
-                <Map className="h-3.5 w-3.5 text-sky-600" />
+        {/* Map Section - hanya tampil jika ada data */}
+        {filteredReports.length > 0 && (
+          <div className="bg-white rounded-2xl shadow-lg overflow-hidden z-0">
+            <div className="px-5 py-4 flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="p-1.5 rounded-lg bg-sky-100">
+                  <Map className="h-3.5 w-3.5 text-sky-600" />
+                </div>
+                <h2 className="text-sm font-semibold text-black">
+                  Peta Laporan
+                </h2>
               </div>
-              <h2 className="text-sm font-semibold text-black">Peta Laporan</h2>
+            </div>
+            <div className="z-auto">
+              <AdminReportMap
+                reports={filteredReports}
+                onMarkerClick={(report) => setSelectedReport(report)}
+                height="500px"
+              />
             </div>
           </div>
-          <div className="z-auto">
-            <AdminReportMap
-              reports={filteredReports}
-              onMarkerClick={(report) => setSelectedReport(report)}
-              height="500px"
-            />
-          </div>
-        </div>
+        )}
 
-        {/* Search & Filter */}
-        <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-          <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <input
-              type="text"
+        {/* Filter Section */}
+        <div className="w-full">
+          <Space wrap size="middle" className="w-full justify-between">
+            <Input
+              placeholder="Cari laporan (lokasi, petugas, status, hari)..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Cari laporan..."
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 bg-white text-black focus:ring-2 focus:ring-blue-200 focus:border-blue-400 outline-none text-sm transition-all placeholder:text-gray-400"
+              prefix={<SearchOutlined className="text-gray-400" />}
+              className="w-full sm:w-80"
+              allowClear
             />
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="relative">
-              <Filter className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
-              <select
+            <Space wrap>
+              <Select
                 value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="pl-9 pr-4 py-2.5 rounded-xl border border-gray-300 bg-white text-black text-sm focus:ring-2 focus:ring-blue-200 focus:border-blue-400 outline-none transition-all appearance-none cursor-pointer"
+                onChange={(value) => setStatusFilter(value)}
+                className="w-40"
+                placeholder="Filter Status"
               >
-                <option value="all">Semua Status</option>
-                <option value="pending">Pending</option>
-                <option value="approved">Approved</option>
-                <option value="rejected">Rejected</option>
-              </select>
-            </div>
-            <button
-              onClick={handleExportCSV}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:text-gray-900 hover:border-gray-400 transition-all"
-            >
-              <Download className="h-3.5 w-3.5" /> Export
-            </button>
-          </div>
+                <Option value="all">Semua Status</Option>
+                <Option value="Liar">Liar</Option>
+                <Option value="Tidak Liar">Tidak Liar</Option>
+              </Select>
+              <Button
+                icon={<DownloadOutlined />}
+                onClick={handleExportCSV}
+                className="flex items-center"
+                disabled={filteredReports.length === 0}
+              >
+                Export CSV
+              </Button>
+            </Space>
+          </Space>
         </div>
 
-        {/* Table section */}
+        {/* Table Section */}
         <AdminReportTable
-          reports={filteredReports}
-          isAdmin={isAdmin}
+          reports={paginatedReports}
           onView={handleView}
           onDelete={handleDelete}
-          onViewPhoto={handleViewPhoto}
-          onApprove={handleApprove}
-          onReject={handleReject}
         />
 
-        {/* Detail Modal */}
+        {/* Pagination */}
+        {filteredReports.length > pageSize && (
+          <div className="flex justify-end mt-4">
+            <Pagination
+              current={currentPage}
+              pageSize={pageSize}
+              total={filteredReports.length}
+              onChange={(page) => setCurrentPage(page)}
+              showSizeChanger={false}
+              showTotal={(total, range) =>
+                `${range[0]}-${range[1]} dari ${total} data`
+              }
+            />
+          </div>
+        )}
+
+        {/* Modals */}
         <DetailModal
           report={selectedReport}
           onClose={() => setSelectedReport(null)}
           isAdmin={isAdmin}
-          onUpdateStatus={handleUpdateStatus}
         />
-
-        {/* Confirm Delete Modal */}
         <ConfirmModal
           open={!!deleteId}
           title="Hapus Laporan"
