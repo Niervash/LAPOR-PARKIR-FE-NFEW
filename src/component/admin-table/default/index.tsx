@@ -1,5 +1,5 @@
 import React from "react";
-import { Eye, Trash2 } from "lucide-react";
+import { Eye, SquareMenu, Trash2 } from "lucide-react";
 import type { ReportAdmin } from "../../../types/admin.types.interface";
 
 // Konfigurasi status untuk "Liar" / "Tidak Liar"
@@ -112,12 +112,19 @@ const AdminReportTable: React.FC<AdminReportTableProps> = ({
                   <td className="px-5 py-4 whitespace-nowrap">
                     <div className="flex items-center gap-0.5 opacity-60 group-hover:opacity-100 transition-opacity">
                       <button
-                        onClick={() => onView(report)}
                         className="p-1.5 rounded-lg hover:bg-gray-300 text-black transition"
+                        title="Detail"
+                      >
+                        <SquareMenu className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        onClick={() => onView(report)}
+                        className="p-1.5 rounded-lg hover:bg-sky-300 text-blue-700 transition"
                         title="Detail"
                       >
                         <Eye className="h-3.5 w-3.5" />
                       </button>
+
                       <button
                         onClick={() => onDelete(report.id)}
                         className="p-1.5 rounded-lg hover:bg-red-200 text-red-800 transition"

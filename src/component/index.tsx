@@ -15,6 +15,7 @@ export * from "./modal-notification";
 
 // admin
 export * from "./admin-table";
+export * from "./top-nav-admin";
 export * from "./card-wrapper";
 export * from "./chart";
 export * from "./admin-modal";
