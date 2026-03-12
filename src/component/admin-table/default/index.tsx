@@ -2,7 +2,6 @@ import React from "react";
 import { Eye, SquareMenu, Trash2 } from "lucide-react";
 import type { ReportAdmin } from "../../../types/admin.types.interface";
 
-// Konfigurasi status untuk "Liar" / "Tidak Liar"
 const statusLiarConfig = {
   Liar: { bg: "bg-red-100 text-red-700", label: "Liar" },
   "Tidak Liar": { bg: "bg-green-100 text-green-700", label: "Tidak Liar" },
@@ -10,14 +9,16 @@ const statusLiarConfig = {
 
 interface AdminReportTableProps {
   reports: ReportAdmin[];
-  onView: (report: ReportAdmin) => any;
+  onView: (report: ReportAdmin) => void;
   onDelete: (id: string) => void;
+  onNavigateDetail?: (id: string) => void; // untuk navigasi ke halaman detail
 }
 
 const AdminReportTable: React.FC<AdminReportTableProps> = ({
   reports,
   onView,
   onDelete,
+  onNavigateDetail,
 }) => {
   if (reports.length === 0) {
     return (
@@ -96,7 +97,7 @@ const AdminReportTable: React.FC<AdminReportTableProps> = ({
                   <td className="px-5 py-4 text-gray-600 text-[13px] whitespace-nowrap">
                     {report.longitude}
                   </td>
-                  <td className="px-5 py-4 max-w-[180px] truncate text-gray-800 text-[13px]">
+                  <td className="px-5 py-4 max-w-45 truncate text-gray-800 text-[13px]">
                     {report.lokasi}
                   </td>
                   <td className="px-5 py-4 text-gray-600 text-[13px] whitespace-nowrap">
@@ -111,20 +112,22 @@ const AdminReportTable: React.FC<AdminReportTableProps> = ({
                   </td>
                   <td className="px-5 py-4 whitespace-nowrap">
                     <div className="flex items-center gap-0.5 opacity-60 group-hover:opacity-100 transition-opacity">
+                      {/* Tombol SquareMenu untuk navigasi ke halaman detail */}
                       <button
+                        onClick={() => onNavigateDetail?.(report.id)}
                         className="p-1.5 rounded-lg hover:bg-gray-300 text-black transition"
-                        title="Detail"
+                        title="Lihat Detail Halaman"
                       >
                         <SquareMenu className="h-3.5 w-3.5" />
                       </button>
+                      {/* Tombol Eye untuk modal detail */}
                       <button
                         onClick={() => onView(report)}
                         className="p-1.5 rounded-lg hover:bg-sky-300 text-blue-700 transition"
-                        title="Detail"
+                        title="Detail Modal"
                       >
                         <Eye className="h-3.5 w-3.5" />
                       </button>
-
                       <button
                         onClick={() => onDelete(report.id)}
                         className="p-1.5 rounded-lg hover:bg-red-200 text-red-800 transition"

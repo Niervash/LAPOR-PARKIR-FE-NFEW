@@ -7,9 +7,13 @@ const userMenuItems = [
 ];
 
 const adminMenuItems = [
-  { title: "Dashboard", path: "/user/dashboard", icon: LayoutDashboard },
-  { title: "Daftar Laporan", path: "/user/dashboard/report", icon: FileText },
-  { title: "Profil", path: "/user/dashboard/profile", icon: User },
+  { title: "Dashboard", path: "/admin/dashboard", icon: LayoutDashboard },
+  {
+    title: "Detail Pelaporan",
+    path: "/admin/dashboard/report/44",
+    icon: FileText,
+  },
+  { title: "Profil", path: "/admin/dashboard/profile", icon: User },
 ];
 
 export { userMenuItems, adminMenuItems };

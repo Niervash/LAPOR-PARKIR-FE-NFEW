@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { AdminLayout } from "../../layout";
-import { Breadcrumb, Input, Select, Button, Pagination, Space } from "antd";
+import { Input, Select, Button, Pagination, Space } from "antd";
 import { SearchOutlined, DownloadOutlined } from "@ant-design/icons";
 import {
   AdminReportMap,
@@ -21,6 +22,7 @@ import {
 const { Option } = Select;
 
 const AdminDashboard: React.FC = () => {
+  const navigate = useNavigate();
   const [reports, setReports] = useState<ReportAdmin[]>([]);
   const [selectedReport, setSelectedReport] = useState<ReportAdmin | null>(
     null,
@@ -33,71 +35,70 @@ const AdminDashboard: React.FC = () => {
   const pageSize = 10;
   const isAdmin = true;
 
-  // Fetch data dari API
-  useEffect(() => {
-    const fetchReports = async () => {
-      try {
-        setLoading(true);
-        const res = await GetDataPetugas();
+  // Fungsi fetch data
+  const fetchReports = async () => {
+    try {
+      setLoading(true);
+      const res = await GetDataPetugas();
 
-        // Logging untuk debugging (bisa dihapus setelah stabil)
-        console.log("Response API:", res);
-
-        // Ekstrak data array dari berbagai kemungkinan struktur
-        let rawData: any[] = [];
-        if (res?.data?.data && Array.isArray(res.data.data)) {
-          rawData = res.data.data;
-        } else if (res?.data && Array.isArray(res.data)) {
-          rawData = res.data;
-        } else if (res?.data?.records && Array.isArray(res.data.records)) {
-          rawData = res.data.records;
-        } else if (res?.data && typeof res.data === "object") {
-          // Cari properti pertama yang berupa array
-          const possibleArray = Object.values(res.data).find(Array.isArray);
-          if (possibleArray) rawData = possibleArray as any[];
-        }
-
-        // Mapping data dengan field alternatif
-        const mapped: ReportAdmin[] = rawData.map((item: any) => ({
-          id: String(item.id || item._id || item.ID || ""),
-          bukti: item.bukti || item.image || item.foto || "",
-          hari: item.hari || item.day || "",
-          identitas_petugas:
-            item.identitas_petugas || item.petugas || item.nama_petugas || "",
-          lokasi: item.lokasi || item.alamat || item.location || "",
-          status: item.status || "Tidak Liar",
-          tanggaldanwaktu:
-            item.tanggaldanwaktu ||
-            item.tanggal ||
-            item.date ||
-            item.waktu ||
-            "",
-          latitude: item.latitude || item.lat || null,
-          longitude: item.longitude || item.lng || null,
-        }));
-
-        setReports(mapped);
-      } catch (error) {
-        console.error("Gagal mengambil data laporan:", error);
-        setReports([]);
-        alert("Gagal memuat data. Silakan refresh.");
-      } finally {
-        setLoading(false);
+      let rawData: any[] = [];
+      if (res?.data?.data && Array.isArray(res.data.data)) {
+        rawData = res.data.data;
+      } else if (res?.data && Array.isArray(res.data)) {
+        rawData = res.data;
+      } else if (res?.data?.records && Array.isArray(res.data.records)) {
+        rawData = res.data.records;
+      } else if (res?.data && typeof res.data === "object") {
+        const possibleArray = Object.values(res.data).find(Array.isArray);
+        if (possibleArray) rawData = possibleArray as any[];
       }
-    };
+
+      const mapped: ReportAdmin[] = rawData.map((item: any) => ({
+        id: String(item.id || item._id || item.ID || ""),
+        bukti: item.bukti || item.image || item.foto || "",
+        hari: item.hari || item.day || "",
+        identitas_petugas:
+          item.identitas_petugas || item.petugas || item.nama_petugas || "",
+        lokasi: item.lokasi || item.alamat || item.location || "",
+        status: item.status || "Tidak Liar",
+        tanggaldanwaktu:
+          item.tanggaldanwaktu || item.tanggal || item.date || item.waktu || "",
+        latitude: item.latitude || item.lat || null,
+        longitude: item.longitude || item.lng || null,
+      }));
+
+      setReports(mapped);
+    } catch (error) {
+      console.error("Gagal mengambil data laporan:", error);
+      setReports([]);
+      alert("Gagal memuat data. Silakan refresh.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch awal
+  useEffect(() => {
     fetchReports();
   }, []);
 
-  // Filter data berdasarkan pencarian dan status
+  // Listener untuk event sync-data dari sidebar
+  useEffect(() => {
+    const handleSync = () => {
+      fetchReports();
+    };
+    window.addEventListener("sync-data", handleSync);
+    return () => window.removeEventListener("sync-data", handleSync);
+  }, []);
+
+  // Filter data
   const filteredReports = useMemo(() => {
     if (!reports.length) return [];
 
     return reports.filter((report) => {
-      // Filter status
       const matchesStatus =
         statusFilter === "all" || report.status === statusFilter;
 
-      // Filter pencarian (case insensitive)
       const searchTerm = search.toLowerCase().trim();
       const matchesSearch =
         searchTerm === "" ||
@@ -111,7 +112,7 @@ const AdminDashboard: React.FC = () => {
     });
   }, [reports, search, statusFilter]);
 
-  // Reset halaman ke 1 ketika filter berubah
+  // Reset halaman saat filter berubah
   useEffect(() => {
     setCurrentPage(1);
   }, [search, statusFilter]);
@@ -124,6 +125,10 @@ const AdminDashboard: React.FC = () => {
 
   const handleView = (report: ReportAdmin) => setSelectedReport(report);
   const handleDelete = (id: string) => setDeleteId(id);
+
+  const handleNavigateDetail = (id: string) => {
+    navigate(`/admin/dashboard/report/${id}`);
+  };
 
   const deleteReport = async (id: string) => {
     try {
@@ -181,11 +186,6 @@ const AdminDashboard: React.FC = () => {
       </div>
 
       <div className="space-y-7 p-4">
-        {/* <Breadcrumb
-          className="font-bold"
-          items={[{ title: "Dashboard" }, { title: "Beranda" }]}
-        /> */}
-
         {/* Chart Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <CardWrapper title="Distribusi Status" icon={PieChartIcon}>
@@ -196,7 +196,7 @@ const AdminDashboard: React.FC = () => {
           </CardWrapper>
         </div>
 
-        {/* Map Section - hanya tampil jika ada data */}
+        {/* Map Section */}
         {filteredReports.length > 0 && (
           <div className="bg-white rounded-2xl shadow-lg overflow-hidden z-0">
             <div className="px-5 py-4 flex items-center justify-between">
@@ -258,6 +258,7 @@ const AdminDashboard: React.FC = () => {
           reports={paginatedReports}
           onView={handleView}
           onDelete={handleDelete}
+          onNavigateDetail={handleNavigateDetail}
         />
 
         {/* Pagination */}

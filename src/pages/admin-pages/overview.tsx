@@ -2,40 +2,92 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Trash2 } from "lucide-react";
 import { AdminLayout } from "../../layout";
-import { GetDataPetugas } from "../../services/admin.service";
-import { DetailReport, QuickNav, TopNav } from "../../component";
-
-export interface ReportItem {
-  identitas_petugas: string;
-  nama: string;
-  tanggaldanwaktu: string;
-  latitude: number;
-  longitude: number;
-  lokasi: string;
-  akurasi?: number;
-  status: 'Liar' | 'Tidak Liar';
-  status_post?: string;
-  hari: string;
-}
+import { GetDataPetugas, GetDetailPetugas } from "../../services/admin.service";
+import {
+  DetailReport,
+  ModalMap,
+  PhotoModal,
+  QuickNav,
+  TopNav,
+} from "../../component";
+import type {
+  ReportItem,
+  ReportStatus,
+} from "../../types/admin.types.interface";
 
 const Overview: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const [reports, setReports] = useState<ReportItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [confirmTarget, setConfirmTarget] = useState<"Liar" | "Tidak Liar" | null>(null);
+  const [detailReport, setDetailReport] = useState<ReportItem | null>(null);
+  const [loadingDetail, setLoadingDetail] = useState(false);
+  const [confirmTarget, setConfirmTarget] = useState<
+    "Liar" | "Tidak Liar" | null
+  >(null);
+  const [showPhoto, setShowPhoto] = useState(false);
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const isAdmin = true;
+
+  const normalizeStatusPost = (status: any): ReportStatus => {
+    if (status === "approve" || status === "reject" || status === "pending") {
+      return status;
+    }
+    return "pending";
+  };
 
   useEffect(() => {
     const fetchReports = async () => {
       try {
         const res = await GetDataPetugas();
-        // Pastikan data berupa array
         let data: ReportItem[] = [];
         if (Array.isArray(res)) {
-          data = res;
-        } else if (res && typeof res === 'object' && 'data' in res && Array.isArray(res.data)) {
-          data = res.data;
+          data = res.map((item: any) => ({
+            id: String(item.id || item._id || item.ID || ""),
+            identitas_petugas:
+              item.identitas_petugas || item.petugas || item.nama_petugas || "",
+            nama: item.nama || "",
+            tanggaldanwaktu:
+              item.tanggaldanwaktu ||
+              item.tanggal ||
+              item.date ||
+              item.waktu ||
+              "",
+            latitude: item.latitude || item.lat || 0,
+            longitude: item.longitude || item.lng || 0,
+            lokasi: item.lokasi || item.alamat || item.location || "",
+            akurasi: item.akurasi,
+            status: item.status || "Tidak Liar",
+            status_post: normalizeStatusPost(item.status_post),
+            hari: item.hari || item.day || "",
+            bukti: item.bukti || item.foto || item.image || undefined,
+          }));
+        } else if (
+          res &&
+          typeof res === "object" &&
+          "data" in res &&
+          Array.isArray(res.data)
+        ) {
+          data = res.data.map((item: any) => ({
+            id: String(item.id || item._id || item.ID || ""),
+            identitas_petugas:
+              item.identitas_petugas || item.petugas || item.nama_petugas || "",
+            nama: item.nama || "",
+            tanggaldanwaktu:
+              item.tanggaldanwaktu ||
+              item.tanggal ||
+              item.date ||
+              item.waktu ||
+              "",
+            latitude: item.latitude || item.lat || 0,
+            longitude: item.longitude || item.lng || 0,
+            lokasi: item.lokasi || item.alamat || item.location || "",
+            akurasi: item.akurasi,
+            status: item.status || "Tidak Liar",
+            status_post: normalizeStatusPost(item.status_post),
+            hari: item.hari || item.day || "",
+            bukti: item.bukti || item.foto || item.image || undefined,
+          }));
         }
         setReports(data);
       } catch (error) {
@@ -48,33 +100,95 @@ const Overview: React.FC = () => {
     fetchReports();
   }, []);
 
-  // Cari index berdasarkan id (identitas_petugas)
-  const currentIndex = reports.findIndex((r) => r.identitas_petugas === id);
-  const report = currentIndex >= 0 ? reports[currentIndex] : null;
+  useEffect(() => {
+    if (!id) return;
+
+    const fetchDetail = async () => {
+      setLoadingDetail(true);
+      try {
+        const res = await GetDetailPetugas(id);
+        const item = res.data || res;
+        const detail: ReportItem = {
+          id: String(item.id || item._id || item.ID || ""),
+          identitas_petugas:
+            item.identitas_petugas || item.petugas || item.nama_petugas || "",
+          nama: item.nama || "",
+          tanggaldanwaktu:
+            item.tanggaldanwaktu ||
+            item.tanggal ||
+            item.date ||
+            item.waktu ||
+            "",
+          latitude: item.latitude || item.lat || 0,
+          longitude: item.longitude || item.lng || 0,
+          lokasi: item.lokasi || item.alamat || item.location || "",
+          akurasi: item.akurasi,
+          status: item.status || "Tidak Liar",
+          status_post: normalizeStatusPost(item.status_post),
+          hari: item.hari || item.day || "",
+          bukti: item.bukti || item.foto || item.image || undefined,
+        };
+        setDetailReport(detail);
+      } catch (error) {
+        console.error("Gagal mengambil detail laporan:", error);
+        setDetailReport(null);
+      } finally {
+        setLoadingDetail(false);
+      }
+    };
+
+    fetchDetail();
+  }, [id]);
+
+  const currentIndex = reports.findIndex((r) => r.id === id);
   const prevReport = currentIndex > 0 ? reports[currentIndex - 1] : null;
-  const nextReport = currentIndex < reports.length - 1 ? reports[currentIndex + 1] : null;
+  const nextReport =
+    currentIndex < reports.length - 1 ? reports[currentIndex + 1] : null;
+
+  const reportToShow =
+    detailReport || (currentIndex >= 0 ? reports[currentIndex] : null);
+
+  const mapReport = reportToShow
+    ? {
+        id: reportToShow.id,
+        latitude: reportToShow.latitude,
+        longitude: reportToShow.longitude,
+      }
+    : null;
 
   const handleStatusChange = (newStatus: "Liar" | "Tidak Liar") => {
-    if (!report) return;
+    if (!reportToShow) return;
     setReports((prev) =>
       prev.map((r) =>
-        r.identitas_petugas === report.identitas_petugas ? { ...r, status: newStatus } : r
-      )
+        r.id === reportToShow.id ? { ...r, status: newStatus } : r,
+      ),
     );
+    if (detailReport) {
+      setDetailReport({ ...detailReport, status: newStatus });
+    }
     setConfirmTarget(null);
-    // TODO: panggil API update jika ada
+    // TODO: panggil API update
   };
 
   const handleDelete = () => {
-    if (!report) return;
-    // TODO: panggil API delete jika ada
-    const newReports = reports.filter((r) => r.identitas_petugas !== report.identitas_petugas);
+    if (!reportToShow) return;
+    const newReports = reports.filter((r) => r.id !== reportToShow.id);
     setReports(newReports);
     if (newReports.length === 0) {
       navigate("/dashboard");
     } else {
-      navigate(`/dashboard/report/${newReports[0].identitas_petugas}`);
+      navigate(`/admin/dashboard/report/${newReports[0].id}`);
     }
+  };
+
+  const handleOpenPhoto = (url: string) => {
+    setPhotoUrl(url);
+    setShowPhoto(true);
+  };
+
+  const handleClosePhoto = () => {
+    setShowPhoto(false);
+    setPhotoUrl(null);
   };
 
   if (loading) {
@@ -87,7 +201,7 @@ const Overview: React.FC = () => {
     );
   }
 
-  if (!report) {
+  if (!reportToShow) {
     return (
       <AdminLayout>
         <div className="p-8 text-center text-gray-500">
@@ -103,26 +217,39 @@ const Overview: React.FC = () => {
         <TopNav
           currentIndex={currentIndex}
           total={reports.length}
-          prevReportId={prevReport?.identitas_petugas || null}
-          nextReportId={nextReport?.identitas_petugas || null}
-          onNavigate={(id) => navigate(`/dashboard/report/${id}`)}
+          prevReportId={prevReport?.id || null}
+          nextReportId={nextReport?.id || null}
+          onNavigate={(id) => navigate(`/admin/dashboard/report/${id}`)}
           onBack={() => navigate("/admin/dashboard")}
         />
 
+        {mapReport && <ModalMap report={mapReport} height="400px" />}
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <DetailReport report={report} />
+          {loadingDetail ? (
+            <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-100 p-6 flex items-center justify-center">
+              <div className="text-gray-500">Memuat detail laporan...</div>
+            </div>
+          ) : (
+            <DetailReport
+              report={reportToShow}
+              onPhotoClick={handleOpenPhoto}
+            />
+          )}
 
           <div className="space-y-6">
             <QuickNav
               reports={reports}
-              currentReportId={report.identitas_petugas}
-              onSelect={(id) => navigate(`/dashboard/report/${id}`)}
+              currentReportId={reportToShow.id}
+              onSelect={(id) => navigate(`/admin/dashboard/report/${id}`)}
             />
 
             {isAdmin && (
               <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
                 <div className="px-5 py-4 border-b border-gray-200">
-                  <h2 className="text-sm font-semibold text-foreground">Ubah Status</h2>
+                  <h2 className="text-sm font-semibold text-foreground">
+                    Ubah Status
+                  </h2>
                 </div>
                 <div className="p-4 space-y-3">
                   {!confirmTarget ? (
@@ -142,7 +269,9 @@ const Overview: React.FC = () => {
                     </div>
                   ) : (
                     <div className="bg-yellow-100/80 rounded-xl p-4 border border-yellow-100 space-y-3">
-                      <p className="text-sm">Konfirmasi ubah status ke {confirmTarget}?</p>
+                      <p className="text-sm">
+                        Konfirmasi ubah status ke {confirmTarget}?
+                      </p>
                       <div className="flex gap-2">
                         <button
                           onClick={() => setConfirmTarget(null)}
@@ -180,6 +309,12 @@ const Overview: React.FC = () => {
             </div>
           </div>
         </div>
+
+        <PhotoModal
+          open={showPhoto}
+          photoUrl={photoUrl}
+          onClose={handleClosePhoto}
+        />
       </div>
     </AdminLayout>
   );

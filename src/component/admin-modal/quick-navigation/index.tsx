@@ -1,4 +1,3 @@
-// QuickNav.tsx
 import React from "react";
 import type { ReportItem } from "../../../types/admin.types.interface";
 
@@ -8,16 +7,25 @@ interface QuickNavProps {
   onSelect: (id: string) => void;
 }
 
-const statusConfig = {
-  Liar: {
-    label: "Liar",
-    bg: "bg-red-100 text-red-700",
-    dot: "bg-red-500",
+// Konfigurasi untuk status post (pending, approve, reject)
+const statusPostConfig: Record<
+  string,
+  { label: string; bg: string; dot: string }
+> = {
+  pending: {
+    label: "Pending",
+    bg: "bg-yellow-100 text-yellow-700",
+    dot: "bg-yellow-500",
   },
-  "Tidak Liar": {
-    label: "Tidak Liar",
+  approve: {
+    label: "Approve",
     bg: "bg-green-100 text-green-700",
     dot: "bg-green-500",
+  },
+  reject: {
+    label: "Reject",
+    bg: "bg-red-100 text-red-700",
+    dot: "bg-red-500",
   },
 };
 
@@ -35,12 +43,14 @@ const QuickNav: React.FC<QuickNavProps> = ({
       </div>
       <div className="p-3 space-y-1 max-h-70 overflow-y-auto">
         {reports.map((r, i) => {
-          const s = statusConfig[r.status] || statusConfig["Tidak Liar"];
-          const isActive = r.identitas_petugas === currentReportId;
+          // Gunakan status_post, fallback ke pending jika tidak ada
+          const statusKey = r.status_post || "pending";
+          const s = statusPostConfig[statusKey] || statusPostConfig.pending;
+          const isActive = r.id === currentReportId;
           return (
             <button
-              key={r.identitas_petugas}
-              onClick={() => onSelect(r.identitas_petugas)}
+              key={r.id}
+              onClick={() => onSelect(r.id)}
               className={`w-full text-left px-3 py-2.5 rounded-xl transition-all text-xs ${
                 isActive
                   ? "bg-gray-100 border border-gray-100"

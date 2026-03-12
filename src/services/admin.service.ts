@@ -85,20 +85,19 @@ const processPetugasAction = async (
 
 // detail
 async function GetDetailPetugas(id: string) {
-  // also add type for id
   const token = await getToken();
-
   try {
-    const response = await cookieApiClient.get(`/adminpetugas/detail/${1}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const response = await cookieApiClient.get(
+      `${BASE_URL}/adminpetugas/detail/${id}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      },
+    );
     console.log("Response Data", response.data);
     return response.data;
   } catch (error) {
-    // Narrow the error type
     if (error instanceof Error) {
-      // Check if it has a response property (typical for Axios errors)
-      const axiosError = error as any; // or use a more specific type like AxiosError
+      const axiosError = error as any;
       console.error(
         "Gagal Fetching Data:",
         axiosError.response?.data || error.message,

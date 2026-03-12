@@ -1,10 +1,18 @@
-// DetailReport.tsx
-import React from "react";
-import { FileText, User, Calendar, MapPin, Navigation } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import {
+  FileText,
+  User,
+  Calendar,
+  MapPin,
+  Navigation,
+  ImageIcon,
+  ZoomIn,
+} from "lucide-react";
 import type { ReportItem } from "../../../types/admin.types.interface";
 
 interface DetailReportProps {
   report: ReportItem;
+  onPhotoClick?: (photoUrl: string) => void; // tambahkan prop
 }
 
 const statusConfig = {
@@ -16,8 +24,73 @@ const statusConfig = {
   },
 };
 
-const DetailReport: React.FC<DetailReportProps> = ({ report }) => {
+const DetailReport: React.FC<DetailReportProps> = ({
+  report,
+  onPhotoClick,
+}) => {
   const status = statusConfig[report.status] || statusConfig["Tidak Liar"];
+  const [address, setAddress] = useState<string | null>(null);
+  const [loadingAddress, setLoadingAddress] = useState(false);
+
+  // Reverse geocoding saat koordinat berubah
+  useEffect(() => {
+    if (!report.latitude || !report.longitude) {
+      setAddress(null);
+      return;
+    }
+
+    const fetchAddress = async () => {
+      setLoadingAddress(true);
+      try {
+        const { latitude, longitude } = report;
+        const response = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`,
+          {
+            headers: {
+              "User-Agent": "MyAdminApp/1.0", // Ganti dengan nama aplikasi Anda
+            },
+          },
+        );
+        const data = await response.json();
+
+        if (data.address) {
+          const addr = data.address;
+          // Ambil komponen jalan, kota, provinsi
+          const road =
+            addr.road || addr.path || addr.street || addr.pedestrian || "";
+          const city =
+            addr.city ||
+            addr.town ||
+            addr.village ||
+            addr.municipality ||
+            addr.county ||
+            "";
+          const state = addr.state || addr.province || "";
+
+          // Hanya ambil yang tidak kosong
+          const parts = [road, city, state].filter(
+            (part) => part.trim() !== "",
+          );
+
+          if (parts.length > 0) {
+            setAddress(parts.join(", "));
+          } else {
+            // Fallback ke alamat lengkap
+            setAddress(data.display_name || null);
+          }
+        } else {
+          setAddress(data.display_name || null);
+        }
+      } catch (error) {
+        console.error("Reverse geocoding error:", error);
+        setAddress(null);
+      } finally {
+        setLoadingAddress(false);
+      }
+    };
+
+    fetchAddress();
+  }, [report.latitude, report.longitude]);
 
   return (
     <div className="lg:col-span-2 space-y-6">
@@ -30,7 +103,7 @@ const DetailReport: React.FC<DetailReportProps> = ({ report }) => {
             <div>
               <h1 className="text-lg font-bold text-black">Detail Laporan</h1>
               <p className="text-xs text-gray-700 font-mono mt-0.5">
-                ID: {report.identitas_petugas}
+                Identitas Petugas : {report.identitas_petugas}
               </p>
             </div>
           </div>
@@ -92,11 +165,54 @@ const DetailReport: React.FC<DetailReportProps> = ({ report }) => {
                 Akurasi
               </p>
               <p className="text-sm text-gray-600 bg-gray-100 p-4 rounded-xl border border-gray-100">
-                {report.akurasi} meter
+                {report.akurasi} %
               </p>
             </div>
           )}
 
+          {/* Bagian Foto Bukti */}
+          {report.bukti && (
+            <div>
+              <p className="text-[10px] text-gray-700 uppercase tracking-wider font-medium mb-2 flex items-center gap-1">
+                <ImageIcon className="h-3 w-3" /> Foto Bukti
+              </p>
+              <div
+                className="relative group cursor-pointer bg-white"
+                onClick={() => onPhotoClick?.(report.bukti)}
+              >
+                <img
+                  src={report.bukti}
+                  alt="Bukti"
+                  className="w-full h-48 object-cover rounded-xl"
+                />
+                <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 rounded-xl transition-all flex items-center justify-center">
+                  <ZoomIn className="h-6 w-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Bagian Koordinat dengan Reverse Geocoding */}
+          <p className="text-[10px] text-gray-700 uppercase tracking-wider font-medium mb-2">
+            Lokasi Daerah
+          </p>
+          <div className="flex items-center gap-2 bg-gray-100 px-4 py-3 rounded-xl border border-gray-100">
+            <Navigation className="h-3.5 w-3.5 text-black" />
+            {loadingAddress ? (
+              <span className="text-xs text-gray-500">Memuat alamat...</span>
+            ) : address ? (
+              <span className="text-xs text-gray-600">{address}</span>
+            ) : (
+              <span className="text-xs text-gray-600 font-mono">
+                {Number(report.latitude).toFixed(6)},{" "}
+                {Number(report.longitude).toFixed(6)}
+              </span>
+            )}
+          </div>
+
+          <p className="text-[10px] text-gray-700 uppercase tracking-wider font-medium mb-2">
+            Lokasi Coordinate
+          </p>
           <div className="flex items-center gap-2 bg-gray-100 px-4 py-3 rounded-xl border border-gray-100">
             <Navigation className="h-3.5 w-3.5 text-black" />
             <span className="text-xs text-gray-600 font-mono">

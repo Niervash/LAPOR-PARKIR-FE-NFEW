@@ -42,7 +42,7 @@ const MainNavbar: React.FC = () => {
 
   // Tentukan path dashboard berdasarkan role
   const getDashboardPath = () => {
-    if (role === "admin") return "/admin/dashboard/data";
+    if (role === "admin") return "/admin/dashboard";
     // Jika role user atau role lainnya
     return "/user/dashboard";
   };
