@@ -1,53 +1,99 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import {
-  dummyReports,
-  type Report,
-} from "../../column/default/overview.column";
-import { DetailReport, QuickNav, TopNav } from "../../component";
-import { AdminLayout } from "../../layout";
 import { Trash2 } from "lucide-react";
+import { AdminLayout } from "../../layout";
+import { GetDataPetugas } from "../../services/admin.service";
+import { DetailReport, QuickNav, TopNav } from "../../component";
+
+export interface ReportItem {
+  identitas_petugas: string;
+  nama: string;
+  tanggaldanwaktu: string;
+  latitude: number;
+  longitude: number;
+  lokasi: string;
+  akurasi?: number;
+  status: 'Liar' | 'Tidak Liar';
+  status_post?: string;
+  hari: string;
+}
 
 const Overview: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const [reports, setReports] = useState<Report[]>(dummyReports);
-  const [showPhoto, setShowPhoto] = useState(false);
-  const [confirmTarget, setConfirmTarget] = useState<
-    "Liar" | "Tidak Liar" | null
-  >(null);
+  const [reports, setReports] = useState<ReportItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [confirmTarget, setConfirmTarget] = useState<"Liar" | "Tidak Liar" | null>(null);
   const isAdmin = true;
 
-  const currentIndex = reports.findIndex((r) => r.id === id);
-  const report = currentIndex >= 0 ? reports[currentIndex] : reports[0];
+  useEffect(() => {
+    const fetchReports = async () => {
+      try {
+        const res = await GetDataPetugas();
+        // Pastikan data berupa array
+        let data: ReportItem[] = [];
+        if (Array.isArray(res)) {
+          data = res;
+        } else if (res && typeof res === 'object' && 'data' in res && Array.isArray(res.data)) {
+          data = res.data;
+        }
+        setReports(data);
+      } catch (error) {
+        console.error("Gagal mengambil data laporan:", error);
+        setReports([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchReports();
+  }, []);
+
+  // Cari index berdasarkan id (identitas_petugas)
+  const currentIndex = reports.findIndex((r) => r.identitas_petugas === id);
+  const report = currentIndex >= 0 ? reports[currentIndex] : null;
   const prevReport = currentIndex > 0 ? reports[currentIndex - 1] : null;
-  const nextReport =
-    currentIndex < reports.length - 1 ? reports[currentIndex + 1] : null;
+  const nextReport = currentIndex < reports.length - 1 ? reports[currentIndex + 1] : null;
 
   const handleStatusChange = (newStatus: "Liar" | "Tidak Liar") => {
     if (!report) return;
     setReports((prev) =>
-      prev.map((r) => (r.id === report.id ? { ...r, status: newStatus } : r)),
+      prev.map((r) =>
+        r.identitas_petugas === report.identitas_petugas ? { ...r, status: newStatus } : r
+      )
     );
     setConfirmTarget(null);
+    // TODO: panggil API update jika ada
   };
 
   const handleDelete = () => {
     if (!report) return;
-    const newReports = reports.filter((r) => r.id !== report.id);
+    // TODO: panggil API delete jika ada
+    const newReports = reports.filter((r) => r.identitas_petugas !== report.identitas_petugas);
     setReports(newReports);
     if (newReports.length === 0) {
       navigate("/dashboard");
     } else {
-      navigate(`/dashboard/report/${newReports[0].id}`);
+      navigate(`/dashboard/report/${newReports[0].identitas_petugas}`);
     }
   };
 
+  if (loading) {
+    return (
+      <AdminLayout>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-gray-500">Memuat data...</div>
+        </div>
+      </AdminLayout>
+    );
+  }
+
   if (!report) {
     return (
-      <div className="p-8 text-center text-gray-500">
-        Laporan tidak ditemukan
-      </div>
+      <AdminLayout>
+        <div className="p-8 text-center text-gray-500">
+          Laporan tidak ditemukan
+        </div>
+      </AdminLayout>
     );
   }
 
@@ -57,31 +103,26 @@ const Overview: React.FC = () => {
         <TopNav
           currentIndex={currentIndex}
           total={reports.length}
-          prevReportId={prevReport?.id || null}
-          nextReportId={nextReport?.id || null}
+          prevReportId={prevReport?.identitas_petugas || null}
+          nextReportId={nextReport?.identitas_petugas || null}
           onNavigate={(id) => navigate(`/dashboard/report/${id}`)}
           onBack={() => navigate("/admin/dashboard")}
         />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <DetailReport
-            report={report}
-            onPhotoClick={() => setShowPhoto(true)}
-          />
+          <DetailReport report={report} />
 
           <div className="space-y-6">
             <QuickNav
               reports={reports}
-              currentReportId={report.id}
+              currentReportId={report.identitas_petugas}
               onSelect={(id) => navigate(`/dashboard/report/${id}`)}
             />
 
             {isAdmin && (
               <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
                 <div className="px-5 py-4 border-b border-gray-200">
-                  <h2 className="text-sm font-semibold text-foreground">
-                    Ubah Status
-                  </h2>
+                  <h2 className="text-sm font-semibold text-foreground">Ubah Status</h2>
                 </div>
                 <div className="p-4 space-y-3">
                   {!confirmTarget ? (
@@ -101,9 +142,7 @@ const Overview: React.FC = () => {
                     </div>
                   ) : (
                     <div className="bg-yellow-100/80 rounded-xl p-4 border border-yellow-100 space-y-3">
-                      <p className="text-sm">
-                        Konfirmasi ubah status ke {confirmTarget}?
-                      </p>
+                      <p className="text-sm">Konfirmasi ubah status ke {confirmTarget}?</p>
                       <div className="flex gap-2">
                         <button
                           onClick={() => setConfirmTarget(null)}
@@ -132,30 +171,15 @@ const Overview: React.FC = () => {
               <div className="p-4">
                 <button
                   onClick={handleDelete}
-                  className="w-full bg-red-200 hover:bg-red-100 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold border border-red-200/20 bg-destructive/5 text-red-900 hover:bg-destructive/10 transition-all shadow-lg "
+                  className="w-full bg-red-200 hover:bg-red-100 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold border border-red-200/20 bg-destructive/5 text-red-900 hover:bg-destructive/10 transition-all shadow-lg"
                 >
-                  <Trash2 className=" text-red-700" />
+                  <Trash2 className="text-red-700" />
                   Hapus Laporan
                 </button>
               </div>
             </div>
           </div>
         </div>
-
-        {showPhoto && report.photoUrl && (
-          <div
-            className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
-            onClick={() => setShowPhoto(false)}
-          >
-            <div className="relative max-w-4xl max-h-full">
-              <img
-                src={report.photoUrl}
-                alt="Bukti"
-                className="max-w-full max-h-[90vh] object-contain rounded-lg"
-              />
-            </div>
-          </div>
-        )}
       </div>
     </AdminLayout>
   );

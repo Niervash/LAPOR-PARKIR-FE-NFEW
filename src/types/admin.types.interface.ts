@@ -23,3 +23,17 @@ export interface ReportAdmin {
   status: WildStatus; // statusPost
   tanggaldanwaktu: string; // tanggaldanwaktu
 }
+
+export interface ReportItem {
+  id_pl?: string; // mungkin tidak digunakan
+  identitas_petugas: string; // ini id
+  nama: string;
+  tanggaldanwaktu: string; // atau Date
+  latitude: number;
+  longitude: number;
+  lokasi: string;
+  akurasi?: number;
+  status: "Liar" | "Tidak Liar";
+  status_post?: string;
+  hari: string;
+}

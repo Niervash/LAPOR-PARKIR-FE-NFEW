@@ -1,3 +1,4 @@
+// TopNav.tsx (tetap sama, hanya pastikan import dan props sesuai)
 import React from "react";
 import { ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -35,7 +36,7 @@ const TopNav: React.FC<TopNavProps> = ({
           <button
             onClick={() => prevReportId && onNavigate(prevReportId)}
             disabled={!prevReportId}
-            className="p-2 rounded-xl border border-gray-100  bg-white text-blackhover:text-foreground hover:border-gray-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+            className="p-2 rounded-xl border border-gray-100 bg-white text-black hover:text-foreground hover:border-gray-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
             title="Sebelumnya"
           >
             <ChevronLeft className="h-4 w-4" />

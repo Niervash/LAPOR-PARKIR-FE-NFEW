@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   X,
   User,
@@ -18,12 +18,9 @@ interface ReportDetailModalProps {
   report: ReportAdmin | null;
   onClose: () => void;
   isAdmin?: boolean;
-  // onUpdateStatus tidak digunakan karena tidak ada field status persetujuan
-  // pada ReportAdmin, bisa dihapus atau dibiarkan opsional
   onUpdateStatus?: never;
 }
 
-// Konfigurasi tampilan untuk WildStatus (Liar / Tidak Liar)
 const wildStatusConfig: Record<
   WildStatus,
   { label: string; bg: string; dot: string }
@@ -46,14 +43,81 @@ const DetailModal: React.FC<ReportDetailModalProps> = ({
   isAdmin = false,
 }) => {
   const [showPhoto, setShowPhoto] = useState(false);
+  const [address, setAddress] = useState<string | null>(null);
+  const [loadingAddress, setLoadingAddress] = useState(false);
+
+  useEffect(() => {
+    if (!report) return;
+
+    const fetchAddress = async () => {
+      // Cek ketersediaan koordinat
+      if (
+        report.latitude === undefined ||
+        report.longitude === undefined ||
+        report.latitude === null ||
+        report.longitude === null
+      ) {
+        setAddress(null);
+        return;
+      }
+
+      setLoadingAddress(true);
+      try {
+        const { latitude, longitude } = report;
+        const response = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`,
+          {
+            headers: {
+              "User-Agent": "MyAdminApp/1.0", // Ganti dengan nama aplikasi Anda
+            },
+          },
+        );
+        const data = await response.json();
+
+        if (data.address) {
+          const addr = data.address;
+          // Ambil komponen jalan, kota, provinsi
+          const road =
+            addr.road || addr.path || addr.street || addr.pedestrian || "";
+          const city =
+            addr.city ||
+            addr.town ||
+            addr.village ||
+            addr.municipality ||
+            addr.county ||
+            "";
+          const state = addr.state || addr.province || "";
+
+          // Hanya ambil komponen yang tidak kosong
+          const parts = [road, city, state].filter(
+            (part) => part.trim() !== "",
+          );
+
+          if (parts.length > 0) {
+            setAddress(parts.join(", "));
+          } else {
+            // Fallback ke alamat lengkap jika tidak ada komponen yang dikenali
+            setAddress(data.display_name || null);
+          }
+        } else {
+          setAddress(data.display_name || null);
+        }
+      } catch (error) {
+        console.error("Reverse geocoding error:", error);
+        setAddress(null);
+      } finally {
+        setLoadingAddress(false);
+      }
+    };
+
+    fetchAddress();
+  }, [report?.latitude, report?.longitude]);
 
   if (!report) return null;
 
-  // Status dari report (WildStatus)
   const currentStatus = report.status;
   const status = wildStatusConfig[currentStatus];
 
-  // Data untuk info grid sesuai dengan field ReportAdmin
   const infoItems = [
     { icon: User, label: "Petugas", value: report.identitas_petugas },
     {
@@ -94,7 +158,7 @@ const DetailModal: React.FC<ReportDetailModalProps> = ({
             {status.label}
           </span>
 
-          {/* Info grid */}
+          {/* Info Grid */}
           <div className="grid grid-cols-2 gap-3">
             {infoItems.map((item, i) => (
               <div key={i} className="bg-gray-100 rounded-xl p-3.5">
@@ -133,7 +197,8 @@ const DetailModal: React.FC<ReportDetailModalProps> = ({
             </div>
           )}
 
-          {/* Koordinat */}
+          {/* Alamat hasil reverse geocoding */}
+          {/* Only the corrdinate */}
           <div className="flex items-center gap-2 bg-gray-100 px-3.5 py-2.5 rounded-xl">
             <Navigation className="h-3 w-3 text-black" />
             <span className="text-[11px] text-black font-mono">
@@ -141,15 +206,20 @@ const DetailModal: React.FC<ReportDetailModalProps> = ({
               {Number(report.longitude).toFixed(6)}
             </span>
           </div>
-
-          {/* Bagian Admin: Tidak ada ubah status karena tidak ada field status persetujuan */}
-          {isAdmin && false && (
-            <div className="bg-gray-100 rounded-xl p-4 space-y-3">
-              <p className="text-[10px] text-black uppercase tracking-wider font-medium">
-                Ubah Status (tidak tersedia)
-              </p>
-            </div>
-          )}
+          {/* with the name of the street */}
+          <div className="flex items-center gap-2 bg-gray-100 px-3.5 py-2.5 rounded-xl">
+            <Navigation className="h-3 w-3 text-black" />
+            {loadingAddress ? (
+              <span className="text-[11px] text-black">Memuat alamat...</span>
+            ) : address ? (
+              <span className="text-[11px] text-black">{address}</span>
+            ) : (
+              <span className="text-[11px] text-black font-mono">
+                {Number(report.latitude).toFixed(6)},{" "}
+                {Number(report.longitude).toFixed(6)}
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Footer */}

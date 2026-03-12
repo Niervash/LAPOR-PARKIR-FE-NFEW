@@ -1,14 +1,25 @@
+// QuickNav.tsx
 import React from "react";
-import {
-  statusConfig,
-  type Report,
-} from "../../../column/default/overview.column";
+import type { ReportItem } from "../../../types/admin.types.interface";
 
 interface QuickNavProps {
-  reports: Report[];
+  reports: ReportItem[];
   currentReportId: string;
   onSelect: (id: string) => void;
 }
+
+const statusConfig = {
+  Liar: {
+    label: "Liar",
+    bg: "bg-red-100 text-red-700",
+    dot: "bg-red-500",
+  },
+  "Tidak Liar": {
+    label: "Tidak Liar",
+    bg: "bg-green-100 text-green-700",
+    dot: "bg-green-500",
+  },
+};
 
 const QuickNav: React.FC<QuickNavProps> = ({
   reports,
@@ -25,11 +36,11 @@ const QuickNav: React.FC<QuickNavProps> = ({
       <div className="p-3 space-y-1 max-h-70 overflow-y-auto">
         {reports.map((r, i) => {
           const s = statusConfig[r.status] || statusConfig["Tidak Liar"];
-          const isActive = r.id === currentReportId;
+          const isActive = r.identitas_petugas === currentReportId;
           return (
             <button
-              key={r.id}
-              onClick={() => onSelect(r.id)}
+              key={r.identitas_petugas}
+              onClick={() => onSelect(r.identitas_petugas)}
               className={`w-full text-left px-3 py-2.5 rounded-xl transition-all text-xs ${
                 isActive
                   ? "bg-gray-100 border border-gray-100"
@@ -49,7 +60,7 @@ const QuickNav: React.FC<QuickNavProps> = ({
                   {s.label}
                 </span>
               </div>
-              <p className="text-muted-foreground truncate">{r.location}</p>
+              <p className="text-gray-600 truncate">{r.lokasi}</p>
             </button>
           );
         })}

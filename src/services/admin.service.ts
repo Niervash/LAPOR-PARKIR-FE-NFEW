@@ -83,7 +83,32 @@ const processPetugasAction = async (
   }
 };
 
-// const GetDetailPelaporan = async():{}
+// detail
+async function GetDetailPetugas(id: string) {
+  // also add type for id
+  const token = await getToken();
+
+  try {
+    const response = await cookieApiClient.get(`/adminpetugas/detail/${1}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    console.log("Response Data", response.data);
+    return response.data;
+  } catch (error) {
+    // Narrow the error type
+    if (error instanceof Error) {
+      // Check if it has a response property (typical for Axios errors)
+      const axiosError = error as any; // or use a more specific type like AxiosError
+      console.error(
+        "Gagal Fetching Data:",
+        axiosError.response?.data || error.message,
+      );
+    } else {
+      console.error("Gagal Fetching Data:", error);
+    }
+    throw error;
+  }
+}
 
 // Fungsi khusus Approve
 const ApprovePetugas = async (id: string): Promise<any> => {
@@ -95,4 +120,10 @@ const RejectPetugas = async (id: string): Promise<any> => {
   return processPetugasAction(id, "reject");
 };
 
-export { GetDataPetugas, DeleteLaporanPetugas, ApprovePetugas, RejectPetugas };
+export {
+  GetDataPetugas,
+  DeleteLaporanPetugas,
+  ApprovePetugas,
+  RejectPetugas,
+  GetDetailPetugas,
+};
