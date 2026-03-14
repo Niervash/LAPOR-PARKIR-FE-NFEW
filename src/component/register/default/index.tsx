@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Shield, ArrowLeft, Camera, User, Mail, Lock } from "lucide-react";
-import { Input, Select, Button, Form } from "antd";
-import type { SelectProps } from "antd";
+import { Input, Select, Form } from "antd";
+import { ILoveparkir } from "../../../assets";
 
 const { Option } = Select;
 
@@ -46,20 +46,25 @@ const Register: React.FC<RegisterProps> = ({ onSubmit, loading }) => {
 
   return (
     <>
+      {/* Header with logo */}
       <div className="text-center mb-8">
         <Link
           to="/"
           className="inline-flex items-center gap-2 text-white font-bold text-2xl drop-shadow-lg"
         >
-          <Shield className="h-8 w-8 text-blue-300" />
-          <span>ParkWatch</span>
+          <div className=" bg-white rounded-xl p-2 mr-2">
+            <img src={ILoveparkir} alt="logo" className="w-10 h-10 " />
+          </div>
+          <span>Lapor Parkir</span>
         </Link>
       </div>
 
+      {/* Register Card */}
       <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl p-8 w-full max-w-md border border-white/20">
+        {/* Back Link */}
         <Link
           to="/"
-          className="inline-flex items-center text-gray-500 hover:text-blue-600 transition-colors mb-6 group"
+          className="inline-flex items-center text-gray-500 hover:text-amber-600 transition-colors mb-6 group"
         >
           <ArrowLeft className="h-4 w-4 mr-1 group-hover:-translate-x-0.5 transition-transform" />
           <span className="text-sm font-medium">Kembali</span>
@@ -90,7 +95,7 @@ const Register: React.FC<RegisterProps> = ({ onSubmit, loading }) => {
             <Input
               placeholder="John Doe"
               prefix={<User className="text-gray-400" />}
-              className="rounded-lg border-gray-300 hover:border-blue-400 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
+              className="rounded-lg border-gray-300 hover:border-amber-400 focus:border-amber-500 focus:ring-amber-500 shadow-sm"
             />
           </Form.Item>
 
@@ -110,7 +115,7 @@ const Register: React.FC<RegisterProps> = ({ onSubmit, loading }) => {
             <Input
               placeholder="nama@email.com"
               prefix={<Mail className="text-gray-400" />}
-              className="rounded-lg border-gray-300 hover:border-blue-400 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
+              className="rounded-lg border-gray-300 hover:border-amber-400 focus:border-amber-500 focus:ring-amber-500 shadow-sm"
             />
           </Form.Item>
 
@@ -148,7 +153,7 @@ const Register: React.FC<RegisterProps> = ({ onSubmit, loading }) => {
             <Input
               placeholder="johndoe123"
               prefix={<User className="text-gray-400" />}
-              className="rounded-lg border-gray-300 hover:border-blue-400 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
+              className="rounded-lg border-gray-300 hover:border-amber-400 focus:border-amber-500 focus:ring-amber-500 shadow-sm"
             />
           </Form.Item>
 
@@ -165,11 +170,11 @@ const Register: React.FC<RegisterProps> = ({ onSubmit, loading }) => {
             <Input.Password
               placeholder="••••••••"
               prefix={<Lock className="text-gray-400" />}
-              className="rounded-lg border-gray-300 hover:border-blue-400 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
+              className="rounded-lg border-gray-300 hover:border-amber-400 focus:border-amber-500 focus:ring-amber-500 shadow-sm"
             />
           </Form.Item>
 
-          {/* Foto Profil */}
+          {/* Foto Profil (opsional) */}
           <div className="mb-5">
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Foto Profil{" "}
@@ -181,7 +186,7 @@ const Register: React.FC<RegisterProps> = ({ onSubmit, loading }) => {
                   <img
                     src={previewUrl}
                     alt="Preview"
-                    className="w-16 h-16 rounded-full object-cover border-2 border-blue-200"
+                    className="w-16 h-16 rounded-full object-cover border-2 border-amber-200"
                   />
                   <button
                     type="button"
@@ -211,33 +216,59 @@ const Register: React.FC<RegisterProps> = ({ onSubmit, loading }) => {
                 onClick={() =>
                   document.getElementById("profile-picture")?.click()
                 }
-                className="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-600 hover:bg-gray-50 hover:border-blue-300 transition"
+                className="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-600 hover:bg-gray-50 hover:border-amber-300 transition"
               >
                 Pilih Foto
               </button>
             </div>
           </div>
 
-          {/* Submit Button */}
-          <Form.Item>
-            <Button
-              type="primary"
-              htmlType="submit"
-              loading={loading}
-              block
-              size="large"
-              className="bg-blue-600 hover:bg-blue-700 border-none shadow-md hover:shadow-lg font-medium rounded-lg"
-            >
-              {loading ? "Memproses..." : "Daftar"}
-            </Button>
+          {/* Submit Button (custom, non-antd) */}
+          <Form.Item shouldUpdate>
+            {() => (
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-amber-600 hover:bg-amber-700 text-white font-medium py-2.5 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center shadow-md hover:shadow-lg"
+              >
+                {loading ? (
+                  <>
+                    <svg
+                      className="animate-spin -ml-1 mr-2 h-5 w-5 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    Memproses...
+                  </>
+                ) : (
+                  "Daftar"
+                )}
+              </button>
+            )}
           </Form.Item>
         </Form>
 
+        {/* Link to Login */}
         <p className="text-center text-sm text-gray-600 mt-6">
           Sudah punya akun?{" "}
           <Link
             to="/auth/login"
-            className="font-medium text-blue-600 hover:text-blue-700 hover:underline transition"
+            className="font-medium text-amber-600 hover:text-amber-700 hover:underline transition"
           >
             Masuk
           </Link>

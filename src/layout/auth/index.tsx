@@ -1,5 +1,5 @@
-// AuthLayout.tsx
 import React from "react";
+import { ilovebg } from "../../assets";
 
 interface AuthLayoutProps {
   children: React.ReactNode;
@@ -11,11 +11,11 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
       {/* Background Image dengan efek blur */}
       <div className="absolute inset-0 z-0">
         <img
-          src="https://images.unsplash.com/photo-1573348722427-f1d6819fdf98?ixlib=rb-4.0.3&auto=format&fit=crop&w=1950&q=80"
+          src={ilovebg}
           alt="Parking background"
           className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-black/30 backdrop-blur-[2px]" />
+        <div className="absolute inset-0 bg-black/30 backdrop-blur-[13px]" />
       </div>
 
       {/* Konten */}

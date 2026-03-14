@@ -11,8 +11,8 @@ const CallToAction: React.FC = () => {
     >
       {/* Background Effects */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-blue-500/10 rounded-full blur-3xl opacity-50" />
-        <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-purple-500/10 rounded-full blur-3xl opacity-30" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-amber-500/10 rounded-full blur-3xl opacity-50" />
+        <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-yellow-500/10 rounded-full blur-3xl opacity-30" />
       </div>
 
       <div className="container mx-auto max-w-5xl relative z-10">
@@ -24,15 +24,15 @@ const CallToAction: React.FC = () => {
           className="relative overflow-hidden rounded-3xl bg-white border border-gray-200 shadow-2xl"
         >
           {/* Background Decorations */}
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 via-transparent to-cyan-50/50 pointer-events-none" />
-          <div className="absolute top-0 right-0 w-96 h-96 bg-blue-100/40 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-cyan-100/40 rounded-full blur-3xl translate-y-1/3 -translate-x-1/3 pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-br from-amber-50/50 via-transparent to-yellow-50/50 pointer-events-none" />
+          <div className="absolute top-0 right-0 w-96 h-96 bg-amber-100/40 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-yellow-100/40 rounded-full blur-3xl translate-y-1/3 -translate-x-1/3 pointer-events-none" />
 
           {/* Content */}
           <div className="relative z-10 p-8 sm:p-12 md:p-16 text-center">
             {/* Icon */}
-            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-blue-50 flex items-center justify-center mx-auto mb-6 sm:mb-8 shadow-sm">
-              <MapPin className="w-8 h-8 sm:w-10 sm:h-10 text-blue-600" />
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-amber-50 flex items-center justify-center mx-auto mb-6 sm:mb-8 shadow-sm">
+              <MapPin className="w-8 h-8 sm:w-10 sm:h-10 text-amber-600" />
             </div>
 
             {/* Heading */}
@@ -49,7 +49,7 @@ const CallToAction: React.FC = () => {
 
             {/* Button CTA */}
             <Link to="/user/dashboard">
-              <button className="group relative w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-10 py-4 rounded-xl font-semibold transition-all shadow-lg shadow-blue-600/30 hover:shadow-blue-700/50 hover:-translate-y-0.5">
+              <button className="group relative w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-700 text-white px-10 py-4 rounded-xl font-semibold transition-all shadow-lg shadow-amber-600/30 hover:shadow-amber-700/50 hover:-translate-y-0.5">
                 <span className="relative">Buat Laporan Sekarang</span>
                 <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
               </button>

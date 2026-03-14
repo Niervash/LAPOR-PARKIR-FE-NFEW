@@ -72,4 +72,15 @@ const AddDataPetugas = async (data: any) => {
   }
 };
 
-export { GetDataPetugas, AddDataPetugas };
+const GetAllData = async () => {
+  try {
+    const response = await cookieApiClient.get(`${BASE_URL}/alldata`);
+    console.log(response.data);
+    return response;
+  } catch (error) {
+    console.error("Error fetching parkir data:", error);
+    throw error;
+  }
+};
+
+export { GetDataPetugas, AddDataPetugas, GetAllData };

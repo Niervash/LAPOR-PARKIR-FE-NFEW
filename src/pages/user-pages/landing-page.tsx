@@ -8,7 +8,6 @@ const UserPage: React.FC = () => {
     <div>
       <UserLayout>
         <MainHero />
-        <AboutMe />
         <MapPage />
         <CallToAction />
       </UserLayout>

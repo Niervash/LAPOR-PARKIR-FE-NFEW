@@ -158,7 +158,6 @@ const DetailReport: React.FC<DetailReportProps> = ({
               <p className="text-sm font-medium text-gray-600">{report.hari}</p>
             </div>
           </div>
-
           {report.akurasi !== undefined && (
             <div>
               <p className="text-[10px] text-gray-700 uppercase tracking-wider font-medium mb-2">
@@ -169,7 +168,33 @@ const DetailReport: React.FC<DetailReportProps> = ({
               </p>
             </div>
           )}
-
+          {/* Bagian Koordinat dengan Reverse Geocoding */}
+          <p className="text-[10px] text-gray-700 uppercase tracking-wider font-medium mb-2">
+            Lokasi Daerah
+          </p>
+          <div className="flex items-center gap-2 bg-gray-100 px-4 py-3 rounded-xl border border-gray-100">
+            <Navigation className="h-3.5 w-3.5 text-black" />
+            {loadingAddress ? (
+              <span className="text-xs text-gray-500">Memuat alamat...</span>
+            ) : address ? (
+              <span className="text-xs text-gray-600">{address}</span>
+            ) : (
+              <span className="text-xs text-gray-600 font-mono">
+                {Number(report.latitude).toFixed(6)}  
+                {Number(report.longitude).toFixed(6)}
+              </span>
+            )}
+          </div>{" "}
+          <p className="text-[10px] text-gray-700 uppercase tracking-wider font-medium mb-2">
+            Lokasi Coordinate
+          </p>
+          <div className="flex items-center gap-2 bg-gray-100 px-4 py-3 rounded-xl border border-gray-100">
+            <Navigation className="h-3.5 w-3.5 text-black" />
+            <span className="text-xs text-gray-600 font-mono">
+              {Number(report.latitude).toFixed(6)},{" "}
+              {Number(report.longitude).toFixed(6)}
+            </span>
+          </div>
           {/* Bagian Foto Bukti */}
           {report.bukti && (
             <div>
@@ -191,35 +216,6 @@ const DetailReport: React.FC<DetailReportProps> = ({
               </div>
             </div>
           )}
-
-          {/* Bagian Koordinat dengan Reverse Geocoding */}
-          <p className="text-[10px] text-gray-700 uppercase tracking-wider font-medium mb-2">
-            Lokasi Daerah
-          </p>
-          <div className="flex items-center gap-2 bg-gray-100 px-4 py-3 rounded-xl border border-gray-100">
-            <Navigation className="h-3.5 w-3.5 text-black" />
-            {loadingAddress ? (
-              <span className="text-xs text-gray-500">Memuat alamat...</span>
-            ) : address ? (
-              <span className="text-xs text-gray-600">{address}</span>
-            ) : (
-              <span className="text-xs text-gray-600 font-mono">
-                {Number(report.latitude).toFixed(6)},{" "}
-                {Number(report.longitude).toFixed(6)}
-              </span>
-            )}
-          </div>
-
-          <p className="text-[10px] text-gray-700 uppercase tracking-wider font-medium mb-2">
-            Lokasi Coordinate
-          </p>
-          <div className="flex items-center gap-2 bg-gray-100 px-4 py-3 rounded-xl border border-gray-100">
-            <Navigation className="h-3.5 w-3.5 text-black" />
-            <span className="text-xs text-gray-600 font-mono">
-              {Number(report.latitude).toFixed(6)},{" "}
-              {Number(report.longitude).toFixed(6)}
-            </span>
-          </div>
         </div>
       </div>
     </div>

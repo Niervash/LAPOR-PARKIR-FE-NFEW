@@ -7,15 +7,18 @@ import {
   LogIn,
   UserPlus,
   LayoutDashboard,
+  LogOut,
 } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
-import { GetItem } from "../../../utils/cookies.storage";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { GetItem, setLogout } from "../../../utils/cookies.storage";
+import { ILoveparkir } from "../../../assets";
 
 const MainNavbar: React.FC = () => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [mobileNav, setMobileNav] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [role, setRole] = useState<string | null>(null);
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const { Tokens, role } = GetItem();
@@ -23,8 +26,8 @@ const MainNavbar: React.FC = () => {
     setRole(role);
   }, []);
 
-  const toggleMenu = () => setIsOpen(!isOpen);
-  const closeMenu = () => setIsOpen(false);
+  const toggleMenu = () => setMobileNav(!mobileNav);
+  const closeMenu = () => setMobileNav(false);
 
   const navLinks = [
     { href: "#fitur", label: "Fitur" },
@@ -40,38 +43,45 @@ const MainNavbar: React.FC = () => {
     return location.pathname === href;
   };
 
-  // Tentukan path dashboard berdasarkan role
   const getDashboardPath = () => {
     if (role === "admin") return "/admin/dashboard";
-    // Jika role user atau role lainnya
     return "/user/dashboard";
   };
 
+  const handleLogout = () => {
+    setLogout(); // hapus token dan role dari cookies/storage
+    setIsLoggedIn(false);
+    setRole(null);
+    navigate("/"); // redirect ke home
+  };
+
   return (
-    <nav className="bg-white sticky top-0 z-50 shadow-sm border-b border-gray-100">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 md:h-20">
+    <nav className="fixed top-0 left-0 right-0 z-50">
+      <div className="mx-auto max-w-7xl px-4 lg:px-8 pt-4">
+        <div className="flex items-center justify-between h-14 px-5 rounded-2xl bg-amber-300/20 backdrop-blur-xl shadow-2xl shadow-yellow-600/20">
           {/* Logo */}
           <Link
             to="/"
-            className="flex items-center gap-2 font-bold text-xl tracking-tight group"
+            className="flex items-center gap-2.5 text-yellow-700 font-bold text-lg tracking-tight"
             onClick={closeMenu}
           >
-            <Shield className="h-7 w-7 text-blue-600" />
-            <span className="text-gray-900">Lapor Parkir</span>
+            <div className="w-7 h-7 bg-white/30 rounded-lg flex items-center justify-center">
+              <img src={ILoveparkir} alt="logo" className="w-5 h-5" />
+            </div>
+            Lapor Parkir
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-8 text-sm font-medium">
+          <div className="hidden md:flex items-center gap-1 text-sm">
             {navLinks.map((link) => (
               <a
                 key={link.href}
                 href={link.href}
-                className={`relative transition-colors duration-200 ${
+                className={`px-3.5 py-1.5 rounded-lg transition-all duration-200 font-medium ${
                   isActive(link.href)
-                    ? "text-blue-600 font-semibold"
-                    : "text-gray-600 hover:text-blue-600"
-                } after:absolute after:left-0 after:bottom1 after:h-0.5 after:w-0 after:bg-blue-600 after:transition-all after:duration-300 hover:after:w-full`}
+                    ? "text-amber-800 bg-amber-400/30"
+                    : "text-gray-700 hover:text-amber-700 hover:bg-amber-400/30"
+                }`}
               >
                 {link.label}
               </a>
@@ -81,28 +91,35 @@ const MainNavbar: React.FC = () => {
           {/* Desktop Auth Buttons */}
           <div className="hidden md:flex items-center gap-2">
             {isLoggedIn ? (
-              <Link
-                to={getDashboardPath()}
-                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg transition-all"
-              >
-                <LayoutDashboard className="h-4 w-4" />
-                Dashboard
-              </Link>
+              <>
+                <Link
+                  to={getDashboardPath()}
+                  className="inline-flex items-center gap-2 px-4 py-1.5 rounded-lg bg-amber-500 text-white text-sm font-semibold hover:bg-amber-600 transition shadow-sm"
+                >
+                  <LayoutDashboard className="h-4 w-4" />
+                  Dashboard
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="inline-flex items-center gap-2 px-4 py-1.5 rounded-lg bg-amber-200 text-gray-700 text-sm font-semibold hover:bg-amber-300 transition shadow-sm"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Keluar
+                </button>
+              </>
             ) : (
               <>
                 <Link
                   to="/auth/login"
-                  className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all"
+                  className="px-4 py-1.5 rounded-lg text-gray-700 text-sm font-medium hover:text-amber-700 hover:bg-amber-400/30 transition"
                 >
-                  <LogIn className="h-4 w-4" />
                   Masuk
                 </Link>
                 <Link
                   to="/auth/register"
-                  className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg transition-all"
+                  className="px-4 py-1.5 rounded-lg bg-amber-500 text-white text-sm font-semibold hover:bg-amber-600 transition shadow-sm shadow-yellow-600/40"
                 >
-                  <UserPlus className="h-4 w-4" />
-                  Daftar
+                  Daftar Gratis
                 </Link>
               </>
             )}
@@ -110,74 +127,86 @@ const MainNavbar: React.FC = () => {
 
           {/* Mobile Menu Button */}
           <button
-            className="md:hidden p-2 rounded-md hover:bg-gray-100 transition-colors text-gray-600"
             onClick={toggleMenu}
+            className="md:hidden text-amber-700 p-1"
             aria-label="Toggle menu"
           >
-            {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            {mobileNav ? (
+              <X className="h-5 w-5" />
+            ) : (
+              <Menu className="h-5 w-5" />
+            )}
           </button>
         </div>
       </div>
 
       {/* Mobile Menu */}
       <AnimatePresence>
-        {isOpen && (
+        {mobileNav && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-            className="md:hidden bg-white border-t border-gray-100 overflow-hidden"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+            className="md:hidden mx-4 mt-2 p-4 rounded-2xl bg-amber-500/90 backdrop-blur-xl border border-amber-300/30 shadow-2xl"
           >
-            <div className="container mx-auto px-4 py-6 space-y-4">
+            <div className="flex flex-col gap-1">
               {navLinks.map((link) => (
                 <a
                   key={link.href}
                   href={link.href}
-                  className={`block py-2 text-base ${
-                    isActive(link.href)
-                      ? "text-blue-600 font-semibold"
-                      : "text-gray-600 hover:text-blue-600"
-                  } transition-colors duration-200`}
                   onClick={closeMenu}
+                  className={`px-3 py-2.5 text-sm font-medium rounded-xl transition ${
+                    isActive(link.href)
+                      ? "text-amber-900 bg-amber-300/50"
+                      : "text-white hover:text-amber-900 hover:bg-amber-300/50"
+                  }`}
                 >
                   {link.label}
                 </a>
               ))}
+            </div>
 
-              <div className="border-t border-gray-100 my-4"></div>
-
-              <div className="flex flex-col sm:flex-row gap-3">
-                {isLoggedIn ? (
+            <div className="flex flex-col gap-2 mt-4 pt-4 border-t border-amber-300/30">
+              {isLoggedIn ? (
+                <>
                   <Link
                     to={getDashboardPath()}
                     onClick={closeMenu}
-                    className="inline-flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium rounded-lg bg-blue-600 hover:bg-blue-700 text-white shadow-md transition-all"
+                    className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white text-amber-600 text-sm font-semibold"
                   >
                     <LayoutDashboard className="h-4 w-4" />
                     Dashboard
                   </Link>
-                ) : (
-                  <>
-                    <Link
-                      to="/auth/login"
-                      onClick={closeMenu}
-                      className="inline-flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium rounded-lg text-gray-600 hover:text-blue-600 bg-gray-50 hover:bg-blue-50 transition-all"
-                    >
-                      <LogIn className="h-4 w-4" />
-                      Masuk
-                    </Link>
-                    <Link
-                      to="/auth/register"
-                      onClick={closeMenu}
-                      className="inline-flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium rounded-lg bg-blue-600 hover:bg-blue-700 text-white shadow-md transition-all"
-                    >
-                      <UserPlus className="h-4 w-4" />
-                      Daftar
-                    </Link>
-                  </>
-                )}
-              </div>
+                  <button
+                    onClick={() => {
+                      handleLogout();
+                      closeMenu();
+                    }}
+                    className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-white text-white text-sm font-medium hover:bg-amber-400/30"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Keluar
+                  </button>
+                </>
+              ) : (
+                <div className="flex gap-2">
+                  <Link
+                    to="/auth/login"
+                    onClick={closeMenu}
+                    className="flex-1 text-center px-4 py-2.5 rounded-xl border border-amber-300/50 text-white text-sm font-medium hover:bg-amber-400/30"
+                  >
+                    Masuk
+                  </Link>
+                  <Link
+                    to="/auth/register"
+                    onClick={closeMenu}
+                    className="flex-1 text-center px-4 py-2.5 rounded-xl bg-white text-amber-600 text-sm font-semibold hover:bg-amber-50"
+                  >
+                    Daftar
+                  </Link>
+                </div>
+              )}
             </div>
           </motion.div>
         )}

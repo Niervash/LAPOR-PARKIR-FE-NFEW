@@ -11,7 +11,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import type { Report } from "../../../types/map.types.interface";
 
-// --- Fix default marker icons (run once) ---
+// Fix default marker icons
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl:
@@ -22,47 +22,44 @@ L.Icon.Default.mergeOptions({
     "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
 });
 
-// --- Color mapping for report statuses (tetap) ---
-const statusColors: Record<"pending" | "approve" | "reject", string> = {
+// Color mapping (key dalam huruf kecil)
+const statusColors: Record<string, string> = {
   pending: "#EAB308", // yellow-500
   approve: "#22C55E", // green-500
   reject: "#EF4444", // red-500
 };
 
-// --- Custom marker untuk preview klik (warna biru tema) ---
+// Custom marker untuk preview klik
 const clickMarkerIcon = L.divIcon({
   className: "click-marker",
-  html: `<div style="width:24px;height:24px;border-radius:50%;background:#2563eb;border:3px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);opacity:0.8;"></div>`, // blue-600
+  html: `<div style="width:24px;height:24px;border-radius:50%;background:#2563eb;border:3px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>`,
   iconSize: [24, 24],
   iconAnchor: [12, 12],
 });
 
-// --- Membuat marker berwarna berdasarkan status ---
-function createStatusIcon(status: "pending" | "approve" | "reject") {
-  const color = statusColors[status];
+// Membuat marker berwarna berdasarkan status (dengan fallback)
+function createStatusIcon(status: string) {
+  const color = statusColors[status.toLowerCase()] || "#9CA3AF"; // gray-400 fallback
   return L.divIcon({
     className: "custom-marker",
     html: `<div style="width:24px;height:24px;border-radius:50%;background:${color};border:3px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>`,
     iconSize: [24, 24],
     iconAnchor: [12, 12],
+    popupAnchor: [0, -12],
   });
 }
 
-// --- Komponen untuk menangani klik peta ---
+// Komponen klik handler
 function ClickHandler({
   onClick,
 }: {
   onClick?: (lat: number, lng: number) => void;
 }) {
-  useMapEvents({
-    click(e) {
-      onClick?.(e.latlng.lat, e.latlng.lng);
-    },
-  });
+  useMapEvents({ click: (e) => onClick?.(e.latlng.lat, e.latlng.lng) });
   return null;
 }
 
-// --- Komponen untuk mengontrol pergerakan peta dengan animasi flyTo ---
+// Komponen untuk animasi flyTo
 function MapController({
   center,
   zoom,
@@ -73,10 +70,7 @@ function MapController({
   const map = useMap();
   useEffect(() => {
     if (center) {
-      map.flyTo(center, zoom || map.getZoom(), {
-        duration: 1.5, // durasi animasi dalam detik
-        easeLinearity: 0.25,
-      });
+      map.flyTo(center, zoom || map.getZoom(), { duration: 1.5 });
     }
   }, [center, zoom, map]);
   return null;
@@ -88,8 +82,8 @@ interface ReportMapProps {
   onClick?: (lat: number, lng: number) => void;
   clickMarker?: { lat: number; lng: number } | null;
   height?: string;
-  center?: [number, number]; // tambahan: koordinat pusat yang akan dituju
-  zoom?: number; // tambahan: level zoom (opsional)
+  center?: [number, number];
+  zoom?: number;
 }
 
 export default function ReportMap({
@@ -108,7 +102,7 @@ export default function ReportMap({
     >
       <MapContainer
         className="z-0"
-        center={[-6.2088, 106.8456]} // Jakarta default
+        center={[-6.2088, 106.8456]} // default Jakarta
         zoom={zoom}
         style={{ height: "100%", width: "100%" }}
         scrollWheelZoom={true}
@@ -118,26 +112,20 @@ export default function ReportMap({
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         />
 
-        {/* Handle map clicks */}
         {onClick && <ClickHandler onClick={onClick} />}
-
-        {/* Kontrol animasi peta */}
         <MapController center={center} zoom={zoom} />
 
-        {/* Render report markers */}
         {reports.map((report) => (
           <Marker
             key={report.id}
             position={[report.latitude, report.longitude]}
             icon={createStatusIcon(report.statusPost)}
-            eventHandlers={{
-              click: () => onMarkerClick?.(report),
-            }}
+            eventHandlers={{ click: () => onMarkerClick?.(report) }}
           >
             <Popup>
               <div className="text-sm min-w-[150px]">
                 <p className="font-semibold text-gray-900">
-                  {report.namaPetugas || "Anonymous"}
+                  {report.identitasPetugas || "Anonymous"}
                 </p>
                 <p className="text-gray-500 text-xs">
                   {new Date(report.createdAt).toLocaleDateString("id-ID")}
@@ -163,7 +151,7 @@ export default function ReportMap({
                       e.stopPropagation();
                       onMarkerClick(report);
                     }}
-                    className="block mt-2 text-xs font-medium text-blue-600 hover:text-blue-700 hover:underline focus:outline-none transition-colors"
+                    className="block mt-2 text-xs font-medium text-blue-600 hover:text-blue-700 hover:underline focus:outline-none"
                   >
                     Lihat Detail
                   </button>
@@ -173,7 +161,6 @@ export default function ReportMap({
           </Marker>
         ))}
 
-        {/* Optional temporary marker for clicked location */}
         {clickMarker && (
           <Marker
             position={[clickMarker.lat, clickMarker.lng]}
