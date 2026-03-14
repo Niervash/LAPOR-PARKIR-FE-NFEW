@@ -14,6 +14,7 @@ import type {
   ReportItem,
   ReportStatus,
 } from "../../types/admin.types.interface";
+import { getAuth, setLogout } from "../../utils/cookies.storage";
 
 const Overview: React.FC = () => {
   const navigate = useNavigate();
@@ -27,7 +28,26 @@ const Overview: React.FC = () => {
   >(null);
   const [showPhoto, setShowPhoto] = useState(false);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [user, setUser] = useState<{ name: string; role?: string } | null>(
+    null,
+  );
   const isAdmin = true;
+
+  // Ambil data user dari cookie/storage
+  useEffect(() => {
+    const userData = getAuth();
+    if (userData) {
+      setUser({
+        name: userData.role || "Admin",
+        role: userData.role || "admin",
+      });
+    }
+  }, []);
+
+  const handleLogout = () => {
+    setLogout();
+    navigate("/auth/login");
+  };
 
   const normalizeStatusPost = (status: any): ReportStatus => {
     if (status === "approve" || status === "reject" || status === "pending") {
@@ -175,7 +195,7 @@ const Overview: React.FC = () => {
     const newReports = reports.filter((r) => r.id !== reportToShow.id);
     setReports(newReports);
     if (newReports.length === 0) {
-      navigate("/dashboard");
+      navigate("/admin/dashboard");
     } else {
       navigate(`/admin/dashboard/report/${newReports[0].id}`);
     }
@@ -193,7 +213,7 @@ const Overview: React.FC = () => {
 
   if (loading) {
     return (
-      <AdminLayout>
+      <AdminLayout user={user} onLogout={handleLogout}>
         <div className="flex items-center justify-center h-64">
           <div className="text-gray-500">Memuat data...</div>
         </div>
@@ -203,7 +223,7 @@ const Overview: React.FC = () => {
 
   if (!reportToShow) {
     return (
-      <AdminLayout>
+      <AdminLayout user={user} onLogout={handleLogout}>
         <div className="p-8 text-center text-gray-500">
           Laporan tidak ditemukan
         </div>
@@ -212,7 +232,7 @@ const Overview: React.FC = () => {
   }
 
   return (
-    <AdminLayout>
+    <AdminLayout user={user} onLogout={handleLogout}>
       <div className="max-w-5xl mx-auto space-y-6">
         <TopNav
           currentIndex={currentIndex}
@@ -247,7 +267,7 @@ const Overview: React.FC = () => {
             {isAdmin && (
               <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
                 <div className="px-5 py-4 border-b border-gray-200">
-                  <h2 className="text-sm font-semibold text-foreground">
+                  <h2 className="text-sm font-semibold text-gray-900">
                     Ubah Status
                   </h2>
                 </div>
@@ -296,13 +316,13 @@ const Overview: React.FC = () => {
               </div>
             )}
 
-            <div className="bg-white rounded-2xl border border-red-200/20 overflow-hidden">
+            <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
               <div className="p-4">
                 <button
                   onClick={handleDelete}
-                  className="w-full bg-red-200 hover:bg-red-100 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold border border-red-200/20 bg-destructive/5 text-red-900 hover:bg-destructive/10 transition-all shadow-lg"
+                  className="w-full bg-red-50 hover:bg-red-100 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold border border-red-200 text-red-700 transition-all"
                 >
-                  <Trash2 className="text-red-700" />
+                  <Trash2 className="h-4 w-4" />
                   Hapus Laporan
                 </button>
               </div>

@@ -17,10 +17,10 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   const [mobileOpen, setMobileOpen] = useState<boolean>(false);
 
   return (
-    <div className="min-h-screen flex w-full bg-[#F7F8F0]">
-      {/* Desktop sidebar - sekarang sticky */}
+    <div className="min-h-screen flex w-full bg-gray-50">
+      {/* Desktop sidebar */}
       <aside
-        className={`hidden md:flex flex-col bg-[#355872] flex-shrink-0 transition-all duration-300 sticky top-0 h-screen ${
+        className={`hidden md:flex flex-col bg-gray-800 flex-shrink-0 transition-all duration-300 sticky top-0 h-screen ${
           sidebarOpen ? "w-60" : "w-[68px]"
         }`}
       >
@@ -40,9 +40,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         />
       )}
 
-      {/* Mobile sidebar (tetap menggunakan fixed, tidak perlu sticky) */}
+      {/* Mobile sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-60 bg-[#355872] transform transition-transform md:hidden ${
+        className={`fixed inset-y-0 left-0 z-50 w-60 bg-gray-800 transform transition-transform md:hidden ${
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -60,7 +60,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           {/* Mobile menu button */}
           <button
             onClick={() => setMobileOpen(true)}
-            className="md:hidden text-gray-800 p-1.5 hover:bg-[#9CD5FF]/20 rounded-lg transition"
+            className="md:hidden text-gray-800 p-1.5 hover:bg-amber-100/20 rounded-lg transition"
             aria-label="Open menu"
           >
             <Menu className="h-5 w-5" />
@@ -69,7 +69,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           {/* Desktop sidebar toggle */}
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="hidden md:flex text-gray-500 hover:text-gray-800 hover:bg-[#9CD5FF]/20 p-1.5 rounded-lg transition"
+            className="hidden md:flex text-gray-500 hover:text-gray-800 hover:bg-amber-100/20 p-1.5 rounded-lg transition"
             aria-label={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
           >
             {sidebarOpen ? (
@@ -89,19 +89,19 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           {/* Right side icons */}
           <div className="flex items-center gap-3">
             <button
-              className="p-2 hover:bg-[#9CD5FF]/20 rounded-xl transition text-gray-500 relative"
+              className="p-2 hover:bg-amber-100/20 rounded-xl transition text-gray-500 relative"
               aria-label="Notifications"
             >
               <Bell className="h-[18px] w-[18px]" />
               <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full" />
             </button>
-            <div className="w-8 h-8 bg-[#355872] rounded-xl flex items-center justify-center text-white text-sm font-bold">
+            <div className="w-8 h-8 bg-amber-600 rounded-xl flex items-center justify-center text-white text-sm font-bold">
               {user?.name?.charAt(0)?.toUpperCase()}
             </div>
           </div>
         </header>
 
-        {/* Main content area - dapat di-scroll */}
+        {/* Main content */}
         <main className="flex-1 p-4 md:p-6 overflow-auto">{children}</main>
       </div>
     </div>

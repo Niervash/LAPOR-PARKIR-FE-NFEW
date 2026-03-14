@@ -18,6 +18,7 @@ import {
   GetDataPetugas,
   DeleteLaporanPetugas,
 } from "../../services/admin.service";
+import { getAuth, GetItem, setLogout } from "../../utils/cookies.storage";
 
 const { Option } = Select;
 
@@ -32,8 +33,23 @@ const AdminDashboard: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [user, setUser] = useState<{
+    name: string;
+    role?: string;
+  } | null>(null);
   const pageSize = 10;
   const isAdmin = true;
+
+  // Ambil data user dari cookie/storage
+  useEffect(() => {
+    const userData = getAuth();
+    if (userData) {
+      setUser({
+        name: userData.role || "Admin",
+        role: userData.role || "admin",
+      });
+    }
+  }, []);
 
   // Fungsi fetch data
   const fetchReports = async () => {
@@ -164,9 +180,14 @@ const AdminDashboard: React.FC = () => {
     URL.revokeObjectURL(url);
   };
 
+  const handleLogout = () => {
+    setLogout(); // hapus token dan data user
+    navigate("/");
+  };
+
   if (loading) {
     return (
-      <AdminLayout>
+      <AdminLayout user={user} onLogout={handleLogout}>
         <div className="flex items-center justify-center h-64">
           <p className="text-gray-500">Memuat data...</p>
         </div>
@@ -175,7 +196,7 @@ const AdminDashboard: React.FC = () => {
   }
 
   return (
-    <AdminLayout>
+    <AdminLayout user={user} onLogout={handleLogout}>
       <div className="space-y-4 p-4">
         <h1 className="text-2xl font-bold text-black tracking-tight">
           Admin Overview

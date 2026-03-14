@@ -2,6 +2,7 @@ import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { LogOut, Shield } from "lucide-react";
 import { userMenuItems } from "../../../column";
+import { ILoveparkir } from "../../../assets";
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -22,8 +23,8 @@ const Sidebar: React.FC<SidebarProps> = ({
     <div className="flex flex-col h-full bg-white border-r border-gray-100">
       {/* Logo Section */}
       <div className="p-5 flex items-center gap-3">
-        <div className="w-9 h-9 bg-blue-50 rounded-xl flex items-center justify-center flex-shrink-0">
-          <Shield className="h-5 w-5 text-blue-600" />
+        <div className="w-9 h-9 bg-amber-50 rounded-xl flex items-center justify-center shrink-0">
+          <img src={ILoveparkir} alt="logo" className="w-5 h-5" />
         </div>
         {sidebarOpen && (
           <Link to={"/"}>
@@ -45,7 +46,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               onClick={() => setMobileOpen(false)}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition text-sm font-medium ${
                 active
-                  ? "bg-blue-50 text-blue-600"
+                  ? "bg-amber-50 text-amber-600"
                   : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
               }`}
             >
