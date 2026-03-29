@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { MapPin, Maximize2, Minimize2, Layers, X } from "lucide-react";
 import toast from "react-hot-toast";
 import type { Report } from "../../../types/map.types.interface";
-import { GetAllData } from "../../../services/report.service";
+import { GetAllData } from "../../../services/report.petugas.service";
 import { ReportMap } from "../../report-map";
 
 const MapPage: React.FC = () => {

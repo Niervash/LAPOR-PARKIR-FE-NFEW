@@ -22,7 +22,7 @@ import { getAuth, setLogout } from "../../utils/cookies.storage";
 import toast from "react-hot-toast";
 import type { Report } from "../../types/map.types.interface";
 import { ReportMap, ReportTable, StatsCard } from "../../component";
-import { GetDataPetugas } from "../../services/report.service";
+import { GetDataPetugas } from "../../services/report.petugas.service";
 import DetailModalUser from "../../component/detail-modal-user/default";
 
 const { Option } = Select;

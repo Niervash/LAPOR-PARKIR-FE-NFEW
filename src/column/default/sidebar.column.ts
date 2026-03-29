@@ -1,4 +1,4 @@
-import { FileText, LayoutDashboard, User } from "lucide-react";
+import { FileText, LayoutDashboard } from "lucide-react";
 
 const userMenuItems = [
   { title: "Dashboard", path: "/user/dashboard", icon: LayoutDashboard },
@@ -9,7 +9,7 @@ const adminMenuItems = [
   { title: "Dashboard", path: "/admin/dashboard", icon: LayoutDashboard },
   {
     title: "Detail Pelaporan",
-    path: "/admin/dashboard/report/44",
+    path: "/admin/dashboard/report/:id",
     icon: FileText,
   },
 ];

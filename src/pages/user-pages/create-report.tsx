@@ -3,7 +3,10 @@ import DashboardLayout from "../../layout/user/dashboard-user";
 import { Breadcrumb, Card, Button, Pagination, Modal } from "antd";
 import { ModalReport, ReportTable, StatsCard } from "../../component";
 import { useNavigate } from "react-router-dom";
-import { AddDataPetugas, GetDataPetugas } from "../../services/report.service";
+import {
+  AddDataPetugas,
+  GetDataPetugas,
+} from "../../services/report.petugas.service";
 import { getAuth, setLogout } from "../../utils/cookies.storage";
 import type { Report } from "../../types/map.types.interface";
 import { Download, Plus } from "lucide-react";
