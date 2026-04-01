@@ -1,16 +1,21 @@
-import { FileText, LayoutDashboard } from "lucide-react";
+import {
+  FileText,
+  FlagTriangleLeft,
+  FlagTriangleRightIcon,
+  LayoutDashboard,
+} from "lucide-react";
 
 const userMenuItems = [
   { title: "Dashboard", path: "/user/dashboard", icon: LayoutDashboard },
   {
     title: "Juru Parkir Liar",
     path: "/user/dashboard/reports/petugas-liar",
-    icon: FileText,
+    icon: FlagTriangleLeft,
   },
   {
     title: "Pelanggaran Parkir",
     path: "/user/dashboard/report",
-    icon: FileText,
+    icon: FlagTriangleRightIcon,
   },
 ];
 

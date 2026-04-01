@@ -1,13 +1,15 @@
 import React from "react";
 import { UserLayout } from "../../layout";
-import { AboutMe, CallToAction, MainHero } from "../../component";
+import { AboutMe, CallToAction, HowItWorks, MainHero } from "../../component";
 import { MapPage } from "../../component/main-map";
 
 const UserPage: React.FC = () => {
   return (
     <div>
       <UserLayout>
-        <MainHero />
+        <MainHero /> 
+        <AboutMe />
+        <HowItWorks />
         <MapPage />
         <CallToAction />
       </UserLayout>

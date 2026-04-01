@@ -1,5 +1,6 @@
 import React from "react";
 import { Shield, ChevronUp } from "lucide-react";
+import { ILoveparkir } from "../../../assets";
 
 const MainFooter: React.FC = () => {
   const currentYear = new Date().getFullYear();
@@ -23,8 +24,10 @@ const MainFooter: React.FC = () => {
           {/* Brand & Description */}
           <div className="space-y-4">
             <div className="flex items-center gap-2 font-bold text-xl">
-              <Shield className="h-7 w-7 text-amber-600" />
-              <span className="text-gray-900">Lapor Parkir</span>
+              <div className="w-7 h-7 bg-white/30 rounded-lg flex items-center justify-center">
+                <img src={ILoveparkir} alt="logo" className="w-5 h-5" />
+              </div>
+              <span className="text-yellow-700 ">Lapor Parkir</span>
             </div>
             <p className="text-sm text-gray-500 leading-relaxed">
               Platform partisipasi masyarakat untuk melaporkan parkir liar.

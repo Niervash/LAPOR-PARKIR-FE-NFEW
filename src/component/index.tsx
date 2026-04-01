@@ -12,6 +12,7 @@ export * from "./call-to-action";
 export * from "./add-report-modal";
 export * from "./about-me";
 export * from "./modal-notification";
+export * from "./how-it-works";
 
 // admin
 export * from "./admin-table";

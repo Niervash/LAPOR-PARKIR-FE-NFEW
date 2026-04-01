@@ -1,5 +1,6 @@
 import AdminLayout from "./admin";
+import AuthLayout from "./auth";
 
 export * from "./user";
 
-export { AdminLayout };
+export { AdminLayout, AuthLayout };
