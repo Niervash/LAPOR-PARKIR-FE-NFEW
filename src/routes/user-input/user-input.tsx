@@ -1,14 +1,29 @@
 import React from "react";
-import { Navigate, Route, Routes } from "react-router-dom";
-import { AdminDashboard, CreateReport, UserPage } from "../../pages";
+import { Routes, Route, Navigate } from "react-router-dom";
 import DashboardPage from "../../pages/user-pages/dashboard";
+import { CreateReport, NotFound } from "../../pages";
 
 const UserInputRoutes: React.FC = () => {
   return (
     <Routes>
-      <Route path="dashboard" element={<DashboardPage />} />
-      <Route path="dashboard/report" element={<CreateReport />} />
-      {/* <Route path="dashboard/reports" element={<AdminDashboard />} /> */}
+      {/* Redirect */}
+      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+
+      {/* Dashboard */}
+      <Route path="/dashboard" element={<DashboardPage />} />
+
+      {/* Reports */}
+      <Route
+        path="/dashboard/reports/petugas-liar"
+        element={<CreateReport />}
+      />
+      {/* <Route
+        path="/dashboard/reports/parkir-liar"
+        element={<CreateReportParkir />}
+      /> */}
+
+      {/* 404 */}
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 };

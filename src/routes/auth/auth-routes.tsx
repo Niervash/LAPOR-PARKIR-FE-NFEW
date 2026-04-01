@@ -1,6 +1,6 @@
 import React from "react";
 import { Route, Routes } from "react-router-dom";
-import { LoginPage } from "../../pages";
+import { LoginPage, NotFound } from "../../pages";
 import RegisterPage from "../../pages/auth/register-page";
 
 const AuthRoutes: React.FC = () => {
@@ -8,6 +8,8 @@ const AuthRoutes: React.FC = () => {
     <Routes>
       <Route path="login" element={<LoginPage />} />
       <Route path="register" element={<RegisterPage />} />
+      {/* 404 */}
+          <Route path="*" element={<NotFound/>} />
     </Routes>
   );
 };

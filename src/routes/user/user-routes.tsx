@@ -1,6 +1,6 @@
 import React from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
-import { AdminDashboard, CreateReport, UserPage } from "../../pages";
+import { AdminDashboard, CreateReport, NotFound, UserPage } from "../../pages";
 import DashboardPage from "../../pages/user-pages/dashboard";
 
 const UserRoutes: React.FC = () => {
@@ -12,6 +12,8 @@ const UserRoutes: React.FC = () => {
       {/* <Route path="dashboard" element={<DashboardPage />} />
       <Route path="dashboard/report" element={<CreateReport />} />
       <Route path="dashboard/reports" element={<AdminDashboard />} /> */}
+      {/* 404 */}
+          <Route path="*" element={<NotFound/>} />
     </Routes>
   );
 };

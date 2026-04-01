@@ -1,6 +1,6 @@
 import React from "react";
 import { Route, Routes } from "react-router-dom";
-import { AdminDashboard, Overview } from "../../pages";
+import { AdminDashboard, NotFound, Overview } from "../../pages";
 
 const AdminRoutes: React.FC = () => {
   return (
@@ -9,6 +9,8 @@ const AdminRoutes: React.FC = () => {
         {/* <Route path="dashbaord" element={<AdminDashboard />} /> */}
         <Route path="/dashboard" element={<AdminDashboard />} />
         <Route path="/dashboard/report/:id" element={<Overview />} />
+        {/* 404 */}
+        <Route path="*" element={<NotFound/>} />
       </Routes>
     </>
   );

@@ -2,7 +2,16 @@ import { FileText, LayoutDashboard } from "lucide-react";
 
 const userMenuItems = [
   { title: "Dashboard", path: "/user/dashboard", icon: LayoutDashboard },
-  { title: "Laporan Saya", path: "/user/dashboard/report", icon: FileText },
+  {
+    title: "Juru Parkir Liar",
+    path: "/user/dashboard/reports/petugas-liar",
+    icon: FileText,
+  },
+  {
+    title: "Pelanggaran Parkir",
+    path: "/user/dashboard/report",
+    icon: FileText,
+  },
 ];
 
 const adminMenuItems = [
