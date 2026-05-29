@@ -6,9 +6,8 @@ const AdminRoutes: React.FC = () => {
   return (
     <>
       <Routes>
-        {/* <Route path="dashbaord" element={<AdminDashboard />} /> */}
-        <Route path="/dashboard" element={<AdminDashboard />} />
-        <Route path="/dashboard/report/:id" element={<Overview />} />
+        <Route path="dashboard" element={<AdminDashboard />} />
+        <Route path="dashboard/report/:id" element={<Overview />} />
         {/* 404 */}
         <Route path="*" element={<NotFound/>} />
       </Routes>
