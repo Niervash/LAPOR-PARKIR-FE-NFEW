@@ -130,7 +130,7 @@ const Overview: React.FC = () => {
     console.log("📊 Reports in array:", reports.length);
     if (id) {
       const found = reports.find((r) => r.id === id);
-      console.log("🎯 Report found:", found ? "YES ✅" : "NO ❌");
+      console.log("🎯 Report found for ID", id, ":", found ? "YES ✅" : "NO ❌");
     }
   }, [id, reports]);
 
@@ -164,9 +164,9 @@ const Overview: React.FC = () => {
     const newReports = reports.filter((r) => r.id !== reportToShow.id);
     setReports(newReports);
     if (newReports.length === 0) {
-      navigate("../");
+      navigate("/admin/dashboard");
     } else {
-      navigate(`../report/${newReports[0].id}`);
+      navigate(`/admin/dashboard/report/${newReports[0].id}`);
     }
   };
 
@@ -208,8 +208,8 @@ const Overview: React.FC = () => {
           total={reports.length}
           prevReportId={prevReport?.id || null}
           nextReportId={nextReport?.id || null}
-          onNavigate={(id) => navigate(`../report/${id}`)}
-          onBack={() => navigate("../")}
+          onNavigate={(id) => navigate(`/admin/dashboard/report/${id}`)}
+          onBack={() => navigate("/admin/dashboard")}
         />
 
         {mapReport && <ModalMap report={mapReport} height="400px" />}
@@ -224,7 +224,7 @@ const Overview: React.FC = () => {
             <QuickNav
               reports={reports}
               currentReportId={reportToShow.id}
-              onSelect={(id) => navigate(`../report/${id}`)}
+              onSelect={(id) => navigate(`/admin/dashboard/report/${id}`)}
             />
 
             {isAdmin && (
