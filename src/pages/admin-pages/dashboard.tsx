@@ -142,8 +142,10 @@ const AdminDashboard: React.FC = () => {
   const handleView = (report: ReportAdmin) => setSelectedReport(report);
   const handleDelete = (id: string) => setDeleteId(id);
 
+  // PERBAIKAN: Gunakan relative path untuk navigate
   const handleNavigateDetail = (id: string) => {
-    navigate(`/admin/dashboard/report/${id}`);
+    console.log("🔗 Navigating to report:", id);
+    navigate(`report/${id}`);
   };
 
   const deleteReport = async (id: string) => {
