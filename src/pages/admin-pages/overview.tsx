@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Trash2 } from "lucide-react";
 import { AdminLayout } from "../../layout";
-import { GetDataPetugas, GetDetailPetugas } from "../../services/admin.service";
+import { GetDataPetugas } from "../../services/admin.service";
 import {
   DetailReport,
   ModalMap,
@@ -21,8 +21,6 @@ const Overview: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [reports, setReports] = useState<ReportItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [detailReport, setDetailReport] = useState<ReportItem | null>(null);
-  const [loadingDetail, setLoadingDetail] = useState(false);
   const [confirmTarget, setConfirmTarget] = useState<
     "Liar" | "Tidak Liar" | null
   >(null);
@@ -56,12 +54,14 @@ const Overview: React.FC = () => {
     return "pending";
   };
 
-  // FETCH ALL REPORTS
+  // FETCH ALL REPORTS - CACHE ONLY
   useEffect(() => {
     const fetchReports = async () => {
       try {
+        console.log("📡 Fetching all reports...");
         const res = await GetDataPetugas();
         let data: ReportItem[] = [];
+        
         if (Array.isArray(res)) {
           data = res.map((item: any) => ({
             id: String(item.id || item._id || item.ID || ""),
@@ -110,6 +110,7 @@ const Overview: React.FC = () => {
             bukti: item.bukti || item.foto || item.image || undefined,
           }));
         }
+        
         setReports(data);
         console.log("✅ Reports loaded:", data.length, "items");
       } catch (error) {
@@ -119,97 +120,26 @@ const Overview: React.FC = () => {
         setLoading(false);
       }
     };
+    
     fetchReports();
   }, []);
 
-  // FETCH DETAIL REPORT WHEN ID CHANGES - IMPROVED WITH CACHE FIRST
+  // DEBUG: Log ID and reports
   useEffect(() => {
     console.log("🔍 Current ID from params:", id);
-
-    if (!id) {
-      console.log("⚠️ No valid ID in URL params");
-      setDetailReport(null);
-      setLoadingDetail(false);
-      return;
+    console.log("📊 Reports in array:", reports.length);
+    if (id) {
+      const found = reports.find((r) => r.id === id);
+      console.log("🎯 Report found:", found ? "YES ✅" : "NO ❌");
     }
-
-    // PERBAIKAN #1: Check apakah data sudah ada di reports array
-    const foundInReports = reports.find((r) => r.id === id);
-
-    if (foundInReports) {
-      console.log("✅ Data ditemukan di reports cache, menggunakan data lokal");
-      setDetailReport(foundInReports);
-      setLoadingDetail(false);
-      return;
-    }
-
-    // Jika tidak ada di reports, baru fetch dari API
-    const fetchDetail = async () => {
-      setLoadingDetail(true);
-      console.log("🎯 Fetching detail dari API untuk ID:", id);
-
-      try {
-        const res = await GetDetailPetugas(id);
-        console.log("📦 Detail API Response:", res);
-
-        // Handle different response formats
-        const item = res?.data || res;
-
-        if (!item || (typeof item === "object" && Object.keys(item).length === 0)) {
-          console.warn("❌ No item data in response");
-          setDetailReport(null);
-          return;
-        }
-
-        const detail: ReportItem = {
-          id: String(item.id || item._id || item.ID || id),
-          identitas_petugas:
-            item.identitas_petugas || item.petugas || item.nama_petugas || "",
-          nama: item.nama || "",
-          tanggaldanwaktu:
-            item.tanggaldanwaktu ||
-            item.tanggal ||
-            item.date ||
-            item.waktu ||
-            "",
-          latitude: item.latitude || item.lat || 0,
-          longitude: item.longitude || item.lng || 0,
-          lokasi: item.lokasi || item.alamat || item.location || "",
-          akurasi: item.akurasi,
-          status: item.status || "Tidak Liar",
-          status_post: normalizeStatusPost(item.status_post),
-          hari: item.hari || item.day || "",
-          bukti: item.bukti || item.foto || item.image || undefined,
-        };
-
-        setDetailReport(detail);
-        console.log("✅ Detail report set successfully:", detail.id);
-      } catch (error) {
-        console.error(`❌ Failed to fetch detail for ID ${id}:`, error);
-        
-        // PERBAIKAN #2: Fallback ke data dari reports array jika ada
-        if (foundInReports) {
-          console.log("⚠️ API gagal, menggunakan fallback dari reports cache");
-          setDetailReport(foundInReports);
-        } else {
-          setDetailReport(null);
-        }
-      } finally {
-        setLoadingDetail(false);
-      }
-    };
-
-    fetchDetail();
   }, [id, reports]);
 
   // CALCULATE NAVIGATION
   const currentIndex = reports.findIndex((r) => r.id === id);
+  const reportToShow = currentIndex >= 0 ? reports[currentIndex] : null;
   const prevReport = currentIndex > 0 ? reports[currentIndex - 1] : null;
   const nextReport =
     currentIndex < reports.length - 1 ? reports[currentIndex + 1] : null;
-
-  // Prioritize detailReport from API, fallback to reports array
-  const reportToShow = detailReport || (currentIndex >= 0 ? reports[currentIndex] : null);
 
   const mapReport = reportToShow
     ? {
@@ -226,10 +156,6 @@ const Overview: React.FC = () => {
         r.id === reportToShow.id ? { ...r, status: newStatus } : r,
       ),
     );
-    if (detailReport) {
-      setDetailReport({ ...detailReport, status: newStatus });
-    }
-    setConfirmTarget(null);
     // TODO: panggil API update
   };
 
@@ -238,9 +164,9 @@ const Overview: React.FC = () => {
     const newReports = reports.filter((r) => r.id !== reportToShow.id);
     setReports(newReports);
     if (newReports.length === 0) {
-      navigate("/admin/dashboard");
+      navigate("../");
     } else {
-      navigate(`report/${newReports[0].id}`);
+      navigate(`../report/${newReports[0].id}`);
     }
   };
 
@@ -268,7 +194,7 @@ const Overview: React.FC = () => {
     return (
       <AdminLayout user={user} onLogout={handleLogout}>
         <div className="p-8 text-center text-gray-500">
-          Laporan tidak ditemukan. ID: {id}
+          Laporan tidak ditemukan. ID: {id} | Total Reports: {reports.length}
         </div>
       </AdminLayout>
     );
@@ -289,16 +215,10 @@ const Overview: React.FC = () => {
         {mapReport && <ModalMap report={mapReport} height="400px" />}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {loadingDetail ? (
-            <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-100 p-6 flex items-center justify-center">
-              <div className="text-gray-500">Memuat detail laporan...</div>
-            </div>
-          ) : (
-            <DetailReport
-              report={reportToShow}
-              onPhotoClick={handleOpenPhoto}
-            />
-          )}
+          <DetailReport
+            report={reportToShow}
+            onPhotoClick={handleOpenPhoto}
+          />
 
           <div className="space-y-6">
             <QuickNav
