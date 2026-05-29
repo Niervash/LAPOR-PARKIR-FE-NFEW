@@ -56,6 +56,7 @@ const Overview: React.FC = () => {
     return "pending";
   };
 
+  // FETCH ALL REPORTS
   useEffect(() => {
     const fetchReports = async () => {
       try {
@@ -110,6 +111,7 @@ const Overview: React.FC = () => {
           }));
         }
         setReports(data);
+        console.log("✅ Reports loaded:", data.length, "items");
       } catch (error) {
         console.error("Gagal mengambil data laporan:", error);
         setReports([]);
@@ -120,16 +122,47 @@ const Overview: React.FC = () => {
     fetchReports();
   }, []);
 
+  // FETCH DETAIL REPORT WHEN ID CHANGES - IMPROVED WITH CACHE FIRST
   useEffect(() => {
-    if (!id) return;
+    console.log("🔍 Current ID from params:", id);
 
+    if (!id) {
+      console.log("⚠️ No valid ID in URL params");
+      setDetailReport(null);
+      setLoadingDetail(false);
+      return;
+    }
+
+    // PERBAIKAN #1: Check apakah data sudah ada di reports array
+    const foundInReports = reports.find((r) => r.id === id);
+
+    if (foundInReports) {
+      console.log("✅ Data ditemukan di reports cache, menggunakan data lokal");
+      setDetailReport(foundInReports);
+      setLoadingDetail(false);
+      return;
+    }
+
+    // Jika tidak ada di reports, baru fetch dari API
     const fetchDetail = async () => {
       setLoadingDetail(true);
+      console.log("🎯 Fetching detail dari API untuk ID:", id);
+
       try {
         const res = await GetDetailPetugas(id);
-        const item = res.data || res;
+        console.log("📦 Detail API Response:", res);
+
+        // Handle different response formats
+        const item = res?.data || res;
+
+        if (!item || (typeof item === "object" && Object.keys(item).length === 0)) {
+          console.warn("❌ No item data in response");
+          setDetailReport(null);
+          return;
+        }
+
         const detail: ReportItem = {
-          id: String(item.id || item._id || item.ID || ""),
+          id: String(item.id || item._id || item.ID || id),
           identitas_petugas:
             item.identitas_petugas || item.petugas || item.nama_petugas || "",
           nama: item.nama || "",
@@ -148,25 +181,35 @@ const Overview: React.FC = () => {
           hari: item.hari || item.day || "",
           bukti: item.bukti || item.foto || item.image || undefined,
         };
+
         setDetailReport(detail);
+        console.log("✅ Detail report set successfully:", detail.id);
       } catch (error) {
-        console.error("Gagal mengambil detail laporan:", error);
-        setDetailReport(null);
+        console.error(`❌ Failed to fetch detail for ID ${id}:`, error);
+        
+        // PERBAIKAN #2: Fallback ke data dari reports array jika ada
+        if (foundInReports) {
+          console.log("⚠️ API gagal, menggunakan fallback dari reports cache");
+          setDetailReport(foundInReports);
+        } else {
+          setDetailReport(null);
+        }
       } finally {
         setLoadingDetail(false);
       }
     };
 
     fetchDetail();
-  }, [id]);
+  }, [id, reports]);
 
+  // CALCULATE NAVIGATION
   const currentIndex = reports.findIndex((r) => r.id === id);
   const prevReport = currentIndex > 0 ? reports[currentIndex - 1] : null;
   const nextReport =
     currentIndex < reports.length - 1 ? reports[currentIndex + 1] : null;
 
-  const reportToShow =
-    detailReport || (currentIndex >= 0 ? reports[currentIndex] : null);
+  // Prioritize detailReport from API, fallback to reports array
+  const reportToShow = detailReport || (currentIndex >= 0 ? reports[currentIndex] : null);
 
   const mapReport = reportToShow
     ? {
@@ -197,7 +240,7 @@ const Overview: React.FC = () => {
     if (newReports.length === 0) {
       navigate("/admin/dashboard");
     } else {
-      navigate(`/admin/dashboard/report/${newReports[0].id}`);
+      navigate(`report/${newReports[0].id}`);
     }
   };
 
@@ -225,7 +268,7 @@ const Overview: React.FC = () => {
     return (
       <AdminLayout user={user} onLogout={handleLogout}>
         <div className="p-8 text-center text-gray-500">
-          Laporan tidak ditemukan
+          Laporan tidak ditemukan. ID: {id}
         </div>
       </AdminLayout>
     );
@@ -239,8 +282,8 @@ const Overview: React.FC = () => {
           total={reports.length}
           prevReportId={prevReport?.id || null}
           nextReportId={nextReport?.id || null}
-          onNavigate={(id) => navigate(`/admin/dashboard/report/${id}`)}
-          onBack={() => navigate("/admin/dashboard")}
+          onNavigate={(id) => navigate(`../report/${id}`)}
+          onBack={() => navigate("../")}
         />
 
         {mapReport && <ModalMap report={mapReport} height="400px" />}
@@ -261,7 +304,7 @@ const Overview: React.FC = () => {
             <QuickNav
               reports={reports}
               currentReportId={reportToShow.id}
-              onSelect={(id) => navigate(`/admin/dashboard/report/${id}`)}
+              onSelect={(id) => navigate(`../report/${id}`)}
             />
 
             {isAdmin && (
@@ -276,13 +319,13 @@ const Overview: React.FC = () => {
                     <div className="space-y-2">
                       <button
                         onClick={() => setConfirmTarget("Liar")}
-                        className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 transition-all"
+                        className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 transition-colors"
                       >
                         Liar
                       </button>
                       <button
                         onClick={() => setConfirmTarget("Tidak Liar")}
-                        className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold border border-green-200 bg-green-50 text-green-700 hover:bg-green-100 transition-all"
+                        className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold border border-green-200 bg-green-50 text-green-700 hover:bg-green-100 transition-colors"
                       >
                         Tidak Liar
                       </button>
@@ -295,13 +338,13 @@ const Overview: React.FC = () => {
                       <div className="flex gap-2">
                         <button
                           onClick={() => setConfirmTarget(null)}
-                          className="flex-1 px-3 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-xs"
+                          className="flex-1 px-3 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-xs transition-colors"
                         >
                           Batal
                         </button>
                         <button
                           onClick={() => handleStatusChange(confirmTarget)}
-                          className={`flex-1 px-3 py-2 rounded-xl text-xs font-semibold border ${
+                          className={`flex-1 px-3 py-2 rounded-xl text-xs font-semibold border transition-colors ${
                             confirmTarget === "Liar"
                               ? "border-red-200 bg-red-50 text-red-700 hover:bg-red-100"
                               : "border-green-200 bg-green-50 text-green-700 hover:bg-green-100"
@@ -320,7 +363,7 @@ const Overview: React.FC = () => {
               <div className="p-4">
                 <button
                   onClick={handleDelete}
-                  className="w-full bg-red-50 hover:bg-red-100 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold border border-red-200 text-red-700 transition-all"
+                  className="w-full bg-red-50 hover:bg-red-100 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold border border-red-200 text-red-700 transition-colors"
                 >
                   <Trash2 className="h-4 w-4" />
                   Hapus Laporan
