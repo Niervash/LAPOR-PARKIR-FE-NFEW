@@ -61,7 +61,7 @@ const Overview: React.FC = () => {
         console.log("📡 Fetching all reports...");
         const res = await GetDataPetugas();
         let data: ReportItem[] = [];
-        
+
         if (Array.isArray(res)) {
           data = res.map((item: any) => ({
             id: String(item.id || item._id || item.ID || ""),
@@ -110,7 +110,7 @@ const Overview: React.FC = () => {
             bukti: item.bukti || item.foto || item.image || undefined,
           }));
         }
-        
+
         setReports(data);
         console.log("✅ Reports loaded:", data.length, "items");
       } catch (error) {
@@ -120,7 +120,7 @@ const Overview: React.FC = () => {
         setLoading(false);
       }
     };
-    
+
     fetchReports();
   }, []);
 
@@ -130,7 +130,12 @@ const Overview: React.FC = () => {
     console.log("📊 Reports in array:", reports.length);
     if (id) {
       const found = reports.find((r) => r.id === id);
-      console.log("🎯 Report found for ID", id, ":", found ? "YES ✅" : "NO ❌");
+      console.log(
+        "🎯 Report found for ID",
+        id,
+        ":",
+        found ? "YES ✅" : "NO ❌",
+      );
     }
   }, [id, reports]);
 
@@ -215,10 +220,7 @@ const Overview: React.FC = () => {
         {mapReport && <ModalMap report={mapReport} height="400px" />}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <DetailReport
-            report={reportToShow}
-            onPhotoClick={handleOpenPhoto}
-          />
+          <DetailReport report={reportToShow} onPhotoClick={handleOpenPhoto} />
 
           <div className="space-y-6">
             <QuickNav
